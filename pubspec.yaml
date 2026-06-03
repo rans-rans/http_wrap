@@ -1,0 +1,29 @@
+name: http_wrap
+description: "A flutter plugin for wrapping HTTP requests and responses, providing a unified interface for handling network communication in Flutter applications."
+version: 1.0.0
+homepage:
+
+environment:
+  sdk: ^3.12.1
+  flutter: '>=3.3.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.6.0
+  plugin_platform_interface: ^2.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+# The following section is specific to Flutter packages.
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: com.innovations.http_wrap
+        pluginClass: HttpWrapPlugin
+      ios:
+        pluginClass: HttpWrapPlugin
