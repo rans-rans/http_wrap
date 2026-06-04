@@ -123,7 +123,7 @@ final res = await api.request(
 	},
 );
 
-if (res.success == true) {
+if (res.success) {
 	print(res.data);
 } else {
 	print(res.message);

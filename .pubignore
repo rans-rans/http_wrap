@@ -1,0 +1,14 @@
+# Generated or local build outputs
+build/
+example/build/
+**/build/
+
+# Tool and IDE metadata
+.dart_tool/
+.idea/
+*.iml
+
+# iOS/macOS generated files inside example app
+example/ios/Flutter/ephemeral/
+example/ios/Flutter/Generated.xcconfig
+example/ios/Flutter/flutter_export_environment.sh
