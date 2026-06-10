@@ -4,6 +4,10 @@ import 'dart:isolate';
 
 import 'package:http/http.dart' as http;
 import 'package:http_wrap/http_method.dart';
+import 'package:http_wrap/request_file_type/request_file.dart';
+import 'package:http_wrap/request_file_type/request_file_from_bytes.dart';
+import 'package:http_wrap/request_file_type/request_file_from_path.dart';
+import 'package:http_wrap/request_file_type/request_file_from_string.dart';
 
 part './http_response.dart';
 
@@ -54,9 +58,6 @@ class HttpWrap {
   ///
   /// This package currently performs requests directly in Dart and does not
   /// depend on platform-specific networking behavior.
-  Future<String?> getPlatformVersion() async {
-    return "0.0";
-  }
 
   /// Sends an HTTP request and returns a normalized [HttpResponse].
   ///
@@ -67,8 +68,9 @@ class HttpWrap {
   ///   multipart requests.
   /// - [queryParams] are appended to the URL.
   /// - [headers] override or extend global default headers.
-  /// - [files] attaches multipart files using `(key, path)` pairs.
-  /// - [useFormData] forces multipart mode even when [files] is empty.
+  /// - [requestFiles] attaches multipart files from path, bytes, or string.
+  /// - [files] is deprecated and kept for backward compatibility.
+  /// - [useFormData] forces multipart mode even when no files are provided.
   ///
   /// Returns `success: false` for network errors, timeout failures, and
   /// non-2xx HTTP responses.
@@ -82,7 +84,9 @@ class HttpWrap {
     Map<String, dynamic>? fields,
     Map<String, dynamic>? queryParams,
     Map<String, String>? headers,
+    @Deprecated('Use requestFiles instead.')
     List<({String key, String? path})> files = const [],
+    List<RequestFile> requestFiles = const [],
     bool useFormData = false,
   }) async {
     try {
@@ -109,7 +113,8 @@ class HttpWrap {
             (fields ?? {})..removeWhere((k, v) => v == null),
           );
       } else {
-        final shouldUseMultipart = useFormData || files.isNotEmpty;
+        final shouldUseMultipart =
+            useFormData || requestFiles.isNotEmpty || files.isNotEmpty;
 
         if (shouldUseMultipart == false) {
           request = http.Request(method.value, uri)
@@ -141,10 +146,32 @@ class HttpWrap {
                 ..headers.addAll(requestHeaders)
                 ..fields.addAll(requestFields);
 
-          for (var i = 0; i < files.length; i++) {
-            (request as http.MultipartRequest).files.add(
-              await http.MultipartFile.fromPath(files[i].key, files[i].path!),
-            );
+          if (requestFiles.isNotEmpty) {
+            for (var file in requestFiles) {
+              final multipartPartFile = switch (file) {
+                RequestFileFromBytes() => http.MultipartFile.fromBytes(
+                  file.itemKey,
+                  file.bytes,
+                ),
+                RequestFileFromPath() => await http.MultipartFile.fromPath(
+                  file.itemKey,
+                  file.path,
+                ),
+                RequestFileFromString() => http.MultipartFile.fromString(
+                  file.itemKey,
+                  file.data,
+                ),
+                _ => throw _HttpException('Unsupported request file type'),
+              };
+
+              (request as http.MultipartRequest).files.add(multipartPartFile);
+            }
+          } else if (files.isNotEmpty) {
+            for (var i = 0; i < files.length; i++) {
+              (request as http.MultipartRequest).files.add(
+                await http.MultipartFile.fromPath(files[i].key, files[i].path!),
+              );
+            }
           }
         }
       }

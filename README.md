@@ -2,7 +2,7 @@
 
 A lightweight Dart/Flutter wrapper around the `http` package to make API calls simpler.
 
-Set your request values (`body`, `headers`, `params`, files, etc.) and call one method.
+Set your request values (`body`, `headers`, `params`, `requestFiles`, etc.) and call one method.
 
 ## API
 
@@ -30,7 +30,9 @@ Future<HttpResponse> request({
 	Map<String, dynamic>? fields,
 	Map<String, dynamic>? queryParams,
 	Map<String, String>? headers,
+	@Deprecated('Use requestFiles instead.')
 	List<({String key, String? path})> files = const [],
+	List<RequestFile> requestFiles = const [],
 	bool useFormData = false,
 })
 ```
@@ -41,7 +43,8 @@ Future<HttpResponse> request({
 - `fields`: JSON body fields (or multipart form fields)
 - `queryParams`: URL query parameters
 - `headers`: Per-request headers
-- `files`: Files for multipart requests `(key, path)`
+- `requestFiles`: Files for multipart requests (`RequestFileFromPath`, `RequestFileFromBytes`, `RequestFileFromString`)
+- `files`: Deprecated. Backward-compatible multipart files using `(key, path)`
 - `useFormData`: Force multipart/form-data
 
 ## Response Shape
@@ -149,6 +152,8 @@ final res = await api.request(
 ### Multipart/Form-Data Request (File Upload)
 
 ```dart
+import 'package:http_wrap/request_file_type/request_file_from_path.dart';
+
 final res = await api.request(
 	method: .post,
 	endpoint: '/api/v1/upload',
@@ -156,8 +161,8 @@ final res = await api.request(
 	fields: {
 		'title': 'Profile photo',
 	},
-	files: [
-		(key: 'file', path: '/absolute/path/to/image.jpg'),
+	requestFiles: [
+		RequestFileFromPath(itemKey: 'file', path: '/absolute/path/to/image.jpg'),
 	],
 );
 ```
