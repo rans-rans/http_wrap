@@ -4,14 +4,15 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'http_wrap'
-  s.version          = '0.0.1'
-  s.summary          = 'A new Flutter project.'
+  s.version          = '1.1.1'
+  s.summary          = 'A Flutter plugin for wrapping HTTP requests and responses.'
   s.description      = <<-DESC
-A new Flutter project.
+A Flutter plugin for wrapping HTTP requests and responses,
+providing a unified interface for network communication.
                        DESC
-  s.homepage         = 'http://example.com'
+  s.homepage         = 'https://github.com/rans-rans/http_wrap'
   s.license          = { :file => '../LICENSE' }
-  s.author           = { 'Your Company' => 'email@example.com' }
+  s.author           = { 'rans-rans' => 'opensource@users.noreply.github.com' }
   s.source           = { :path => '.' }
   s.source_files = 'http_wrap/Sources/http_wrap/**/*'
   s.dependency 'Flutter'

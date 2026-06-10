@@ -89,7 +89,7 @@ Add to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-	http_wrap: ^1.1.0
+	http_wrap: ^1.1.1
 ```
 
 Then run:
@@ -170,6 +170,7 @@ final res = await api.request(
 ## Notes
 
 - `null` values in `fields` are automatically removed before sending.
+- In multipart requests, non-scalar field values (like `List` and `Map`) are JSON-encoded before sending.
 - For multipart requests, avoid manually setting `content-type`; it is handled internally.
 - Network and timeout errors are converted to readable `message` values.
 - For non-2xx responses, `success` is `false` and `errorData` contains server error details.

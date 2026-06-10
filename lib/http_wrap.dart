@@ -39,6 +39,19 @@ class HttpWrap {
     config();
   }
 
+  String _serializeMultipartFieldValue(dynamic value) {
+    if (value is String) return value;
+    if (value is num || value is bool) return value.toString();
+    if (value is DateTime) return value.toIso8601String();
+
+    try {
+      // Keep arrays/maps (and objects with toJson) as valid JSON strings.
+      return jsonEncode(value);
+    } catch (_) {
+      return value.toString();
+    }
+  }
+
   /// Sets global defaults used by every request unless overridden.
   ///
   /// - [baseUrl]: Host used to build request URLs.
@@ -119,7 +132,7 @@ class HttpWrap {
         if (shouldUseMultipart == false) {
           request = http.Request(method.value, uri)
             ..headers.addAll(resolvedHeaders)
-            ..body = json.encode(
+            ..body = jsonEncode(
               (fields ?? {})..removeWhere((k, v) => v == null),
             );
         } else {
@@ -132,11 +145,13 @@ class HttpWrap {
           fields?.forEach((k, v) {
             if (v == null) return;
 
-            final stringValue = v.toString();
+            final stringValue = _serializeMultipartFieldValue(v);
             if (stringValue.isEmpty) return;
 
             requestFields[k] = stringValue;
           });
+
+          requestFields.removeWhere((k, v) => v.isEmpty);
 
           request =
               http.MultipartRequest(

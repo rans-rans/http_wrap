@@ -1,3 +1,13 @@
+## 1.1.2
+* Removed empty fields for for request field request data
+
+
+## 1.1.1
+
+* Fixed multipart form field serialization for complex values.
+* Multipart `fields` values that are `List` or `Map` are now JSON-encoded before sending.
+* Added documentation notes clarifying multipart serialization behavior.
+
 ## 1.1.0
 
 * Added `requestFiles` support for multipart uploads using `RequestFileFromPath`, `RequestFileFromBytes`, and `RequestFileFromString`.
