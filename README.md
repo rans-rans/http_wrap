@@ -89,7 +89,7 @@ Add to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  http: ^1.0.0
+	http_wrap: ^1.1.0
 ```
 
 Then run:

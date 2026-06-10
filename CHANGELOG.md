@@ -1,3 +1,11 @@
+## 1.1.0
+
+* Added `requestFiles` support for multipart uploads using `RequestFileFromPath`, `RequestFileFromBytes`, and `RequestFileFromString`.
+* Deprecated the `files` parameter in `request()` in favor of `requestFiles`.
+* Kept backward compatibility for `files` so existing integrations continue to work.
+* Updated multipart request handling so requests switch to multipart mode when `requestFiles` is provided.
+* Refactored request file type handling to clearer Dart pattern matching.
+
 ## 1.0.0
 
 * Initial release of the `http_wrap` plugin.
