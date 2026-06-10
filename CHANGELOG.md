@@ -1,4 +1,8 @@
+## 1.1.3
+* Added another fix to remove fields with empty or null value for multipart request
+
 ## 1.1.2
+
 * Removed empty fields for for request field request data
 
 

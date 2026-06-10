@@ -142,16 +142,20 @@ class HttpWrap {
             );
 
           Map<String, String> requestFields = {};
-          fields?.forEach((k, v) {
-            if (v == null) return;
+          for (var i = 0; i < (fields?.length ?? 0); i++) {
+            final item = fields!.entries.elementAt(i);
+
+            final k = item.key;
+            final v = item.value;
+            if (v == null || v.toString().isEmpty || v.toString() == "null") {
+              continue;
+            }
 
             final stringValue = _serializeMultipartFieldValue(v);
-            if (stringValue.isEmpty) return;
+            if (stringValue.isEmpty) continue;
 
             requestFields[k] = stringValue;
-          });
-
-          requestFields.removeWhere((k, v) => v.isEmpty);
+          }
 
           request =
               http.MultipartRequest(
