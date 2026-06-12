@@ -1,17 +1,19 @@
 # http_wrap_example
 
-Demonstrates how to use the http_wrap plugin.
+Example app for `http_wrap`.
 
-## Getting Started
+This example configures `HttpWrap` with a base URL and fetches book data from
+`https://fakerapi.it` using the package's `request()` API.
 
-This project is a starting point for a Flutter application.
+## What It Shows
 
-A few resources to get you started if this is your first Flutter project:
+- Configuring a shared `HttpWrap` instance with `baseUrl`
+- Sending a `GET` request with `queryParams`
+- Reading the normalized `HttpResponse` payload in a Flutter UI
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## Running The Example
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```bash
+flutter pub get
+flutter run
+```

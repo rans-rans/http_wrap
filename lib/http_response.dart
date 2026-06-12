@@ -13,7 +13,8 @@ class HttpResponse {
 
   /// Optional error metadata available for failed requests.
   ///
-  /// - `errorCode`: HTTP status code when available.
+  /// - `errorCode`: HTTP status code(eg. 200, 404, etc) WHEN AVAILABLE.
+  ///  The error code will be null when the request fails due to network issues or other client-side errors.
   /// - `errorData`: Response payload returned by the server on failure.
   final ({int? errorCode, dynamic errorData})? errorData;
 

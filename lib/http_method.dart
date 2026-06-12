@@ -1,3 +1,5 @@
+part of 'http_wrap.dart';
+
 /// Supported HTTP verbs for [HttpWrap.request].
 enum HttpMethod {
   /// Retrieves data without modifying server state.

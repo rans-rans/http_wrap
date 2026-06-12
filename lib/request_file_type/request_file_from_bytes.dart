@@ -1,4 +1,4 @@
-import 'package:http_wrap/request_file_type/request_file.dart';
+part of './request_file.dart';
 
 class RequestFileFromBytes extends RequestFile {
   final List<int> bytes;

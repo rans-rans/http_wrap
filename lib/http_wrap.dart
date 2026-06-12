@@ -3,13 +3,10 @@ import 'dart:io';
 import 'dart:isolate';
 
 import 'package:http/http.dart' as http;
-import 'package:http_wrap/http_method.dart';
 import 'package:http_wrap/request_file_type/request_file.dart';
-import 'package:http_wrap/request_file_type/request_file_from_bytes.dart';
-import 'package:http_wrap/request_file_type/request_file_from_path.dart';
-import 'package:http_wrap/request_file_type/request_file_from_string.dart';
 
-part './http_response.dart';
+part 'http_response.dart';
+part 'http_method.dart';
 
 class _HttpException implements Exception {
   final String message;
@@ -66,11 +63,6 @@ class HttpWrap {
     _defaultHeaders = defaultHeaders ?? _defaultHeaders;
     _timeout = timeout ?? _timeout;
   }
-
-  /// Returns a placeholder platform version.
-  ///
-  /// This package currently performs requests directly in Dart and does not
-  /// depend on platform-specific networking behavior.
 
   /// Sends an HTTP request and returns a normalized [HttpResponse].
   ///

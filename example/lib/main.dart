@@ -33,7 +33,7 @@ class _MyAppState extends State<MyApp> {
     _batchIdCtrl.dispose();
   }
 
-  /// Platform messages are asynchronous, so we initialize in an async method.
+  /// Fetches a batch of books using the current quantity input.
   Future<HttpResponse> _getData() async {
     if (_batchIdCtrl.text.isEmpty) {
       _batchIdCtrl.text = "1";

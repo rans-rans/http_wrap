@@ -1,76 +1,10 @@
 # http_wrap
 
-A lightweight Dart/Flutter wrapper around the `http` package to make API calls simpler.
+A lightweight Dart/Flutter wrapper around the `http` package to make API calls
+simpler.
 
-Set your request values (`body`, `headers`, `params`, `requestFiles`, etc.) and call one method.
-
-## API
-
-### `config`
-
-```dart
-void config({
-	String? baseUrl,
-	Map<String, String>? defaultHeaders,
-	int? timeout,
-})
-```
-
-- `baseUrl`: Default host/base URL used when calling `request`
-- `defaultHeaders`: Headers automatically added to every request
-- `timeout`: Timeout in seconds (default: `100`)
-
-### `request`
-
-```dart
-Future<HttpResponse> request({
-	required HttpMethod method,
-	required String endpoint,
-	String? baseUrl,
-	Map<String, dynamic>? fields,
-	Map<String, dynamic>? queryParams,
-	Map<String, String>? headers,
-	@Deprecated('Use requestFiles instead.')
-	List<({String key, String? path})> files = const [],
-	List<RequestFile> requestFiles = const [],
-	bool useFormData = false,
-})
-```
-
-- `method`: HTTP method (`.get`, `.post`, `.put`, `.patch`, `.delete`)
-- `endpoint`: API route, example: `/api/v2/books`
-- `baseUrl`: Per-request base URL override
-- `fields`: JSON body fields (or multipart form fields)
-- `queryParams`: URL query parameters
-- `headers`: Per-request headers
-- `requestFiles`: Files for multipart requests (`RequestFileFromPath`, `RequestFileFromBytes`, `RequestFileFromString`)
-- `files`: Deprecated. Backward-compatible multipart files using `(key, path)`
-- `useFormData`: Force multipart/form-data
-
-## Response Shape
-
-Every request returns `HttpResponse`:
-
-```dart
-class HttpResponse {
-	final String? message;
-	final dynamic data;
-	final bool success;
-	final ({int? errorCode, dynamic errorData})? errorData;
-}
-```
-
-Typical checks:
-
-```dart
-if (response.success) {
-	// handle response.data
-} else {
-	// handle response.message
-	print(response.errorData?.errorCode);
-	print(response.errorData?.errorData);
-}
-```
+Set your request values (`fields`, `headers`, `queryParams`, `requestFiles`, etc.) and
+call one method.
 
 ## Features
 
@@ -87,9 +21,9 @@ if (response.success) {
 
 Add to your `pubspec.yaml`:
 
-```yaml
+```
 dependencies:
-	http_wrap: ^1.1.1
+	http_wrap: ^1.1.4
 ```
 
 Then run:
@@ -167,15 +101,86 @@ final res = await api.request(
 );
 ```
 
+## API Reference
+
+### `config`
+
+```dart
+void config({
+	String? baseUrl,
+	Map<String, String>? defaultHeaders,
+	int? timeout,
+})
+```
+
+- `baseUrl`: Default host/base URL used when calling `request`
+- `defaultHeaders`: Headers automatically added to every request
+- `timeout`: Timeout in seconds (default: `100`)
+
+### `request`
+
+```dart
+Future<HttpResponse> request({
+	required HttpMethod method,
+	required String endpoint,
+	String? baseUrl,
+	Map<String, dynamic>? fields,
+	Map<String, dynamic>? queryParams,
+	Map<String, String>? headers,
+	@Deprecated('Use requestFiles instead.')
+	List<({String key, String? path})> files = const [],
+	List<RequestFile> requestFiles = const [],
+	bool useFormData = false,
+})
+```
+
+- `method`: HTTP method (`.get`, `.post`, `.put`, `.patch`, `.delete`)
+- `endpoint`: API route, example: `/api/v2/books`
+- `baseUrl`: Per-request base URL override
+- `fields`: JSON body fields (or multipart form fields)
+- `queryParams`: URL query parameters
+- `headers`: Per-request headers
+- `requestFiles`: Files for multipart requests (`RequestFileFromPath`,
+  `RequestFileFromBytes`, `RequestFileFromString`)
+- `files`: Deprecated. Backward-compatible multipart files using `(key, path)`
+- `useFormData`: Force multipart/form-data
+
+## Response Shape
+
+Every request returns `HttpResponse`:
+
+```dart
+class HttpResponse {
+	final String? message;
+	final dynamic data;
+	final bool success;
+	final ({int? errorCode, dynamic errorData})? errorData;
+}
+```
+
+Typical checks:
+
+```dart
+if (response.success) {
+	// handle response.data
+} else {
+	// handle response.message
+	print(response.errorData?.errorCode);
+	print(response.errorData?.errorData);
+}
+```
+
 ## Notes
 
 - `null` values in `fields` are automatically removed before sending.
-- In multipart requests, non-scalar field values (like `List` and `Map`) are JSON-encoded before sending.
-- For multipart requests, avoid manually setting `content-type`; it is handled internally.
+- In multipart requests, non-scalar field values (like `List` and `Map`) are
+  JSON-encoded before sending.
+- For multipart requests, avoid manually setting `content-type`; it is handled
+  internally.
 - Network and timeout errors are converted to readable `message` values.
-- For non-2xx responses, `success` is `false` and `errorData` contains server error details.
+- For non-2xx responses, `success` is `false` and `errorData` contains server
+  error details.
 
 ## License
 
 This project is licensed under the MIT License. See `LICENSE` for details.
-

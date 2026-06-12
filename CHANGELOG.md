@@ -1,3 +1,9 @@
+## 1.1.4
+
+* Refreshed package and example documentation to match the current `fields`, `queryParams`, and `requestFiles` API.
+* Improved generated plugin comments and package metadata to better describe the Dart-first request flow.
+* Cleaned up internal library part declarations for request file and response types without changing the public API.
+
 ## 1.1.3
 * Added another fix to remove fields with empty or null value for multipart request
 

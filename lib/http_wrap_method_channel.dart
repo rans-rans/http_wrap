@@ -3,9 +3,9 @@ import 'package:flutter/services.dart';
 
 import 'http_wrap_platform_interface.dart';
 
-/// An implementation of [HttpWrapPlatform] that uses method channels.
+/// Default method-channel implementation kept for plugin scaffold parity.
 class MethodChannelHttpWrap extends HttpWrapPlatform {
-  /// The method channel used to interact with the native platform.
+  /// Channel used by the generated example/platform-version integration.
   @visibleForTesting
   final methodChannel = const MethodChannel('http_wrap');
 
