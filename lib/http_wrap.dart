@@ -7,6 +7,7 @@ import 'package:http_wrap/request_file_type/request_file.dart';
 
 part 'http_response.dart';
 part 'http_method.dart';
+part 'http_wrap_multipart_fields.dart';
 
 class _HttpException implements Exception {
   final String message;
@@ -34,19 +35,6 @@ class HttpWrap {
 
   HttpWrap._internal() {
     config();
-  }
-
-  String _serializeMultipartFieldValue(dynamic value) {
-    if (value is String) return value;
-    if (value is num || value is bool) return value.toString();
-    if (value is DateTime) return value.toIso8601String();
-
-    try {
-      // Keep arrays/maps (and objects with toJson) as valid JSON strings.
-      return jsonEncode(value);
-    } catch (_) {
-      return value.toString();
-    }
   }
 
   /// Sets global defaults used by every request unless overridden.
@@ -133,21 +121,7 @@ class HttpWrap {
               (key, value) => key.toLowerCase() == 'content-type',
             );
 
-          Map<String, String> requestFields = {};
-          for (var i = 0; i < (fields?.length ?? 0); i++) {
-            final item = fields!.entries.elementAt(i);
-
-            final k = item.key;
-            final v = item.value;
-            if (v == null || v.toString().isEmpty || v.toString() == "null") {
-              continue;
-            }
-
-            final stringValue = _serializeMultipartFieldValue(v);
-            if (stringValue.isEmpty) continue;
-
-            requestFields[k] = stringValue;
-          }
+          final requestFields = _buildMultipartFields(fields);
 
           request =
               http.MultipartRequest(

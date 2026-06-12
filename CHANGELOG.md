@@ -1,3 +1,10 @@
+## 1.1.5
+
+* Changed multipart `fields` encoding for `List` and `Map` values to Laravel/PHP-style bracketed keys (for example: `items[0]`, `meta[name]`) instead of JSON strings.
+* Fixed multipart payload handling to avoid sending array values as string literals like `"[]"`.
+* Clarified multipart empty-list behavior: explicit empty lists are omitted because multipart form fields cannot represent `[]` directly.
+* Refactored multipart field flattening to an iterative (non-recursive) implementation and moved it into a dedicated part file.
+
 ## 1.1.4
 
 * Refreshed package and example documentation to match the current `fields`, `queryParams`, and `requestFiles` API.

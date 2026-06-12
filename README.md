@@ -23,7 +23,7 @@ Add to your `pubspec.yaml`:
 
 ```
 dependencies:
-	http_wrap: ^1.1.4
+	http_wrap: ^1.1.5
 ```
 
 Then run:
@@ -173,8 +173,11 @@ if (response.success) {
 ## Notes
 
 - `null` values in `fields` are automatically removed before sending.
-- In multipart requests, non-scalar field values (like `List` and `Map`) are
-  JSON-encoded before sending.
+- In multipart requests, `List` and `Map` values are encoded using bracketed
+	form keys (for example: `items[0]`, `items[1]`, `meta[name]`) so backends
+	like Laravel/PHP can parse them as arrays/objects.
+- Explicit empty lists cannot be represented directly in multipart form fields.
+	Empty lists are omitted; normalize them to `[]` on the server if needed.
 - For multipart requests, avoid manually setting `content-type`; it is handled
   internally.
 - Network and timeout errors are converted to readable `message` values.
