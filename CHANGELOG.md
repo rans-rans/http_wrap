@@ -1,3 +1,8 @@
+## 1.1.6
+
+* Fixed isolate crash when decoding the response body of a multipart request.
+* The response body string is now extracted before spawning the isolate so only a plain `String` crosses the isolate boundary, avoiding the `ByteStream` unsendable object error.
+
 ## 1.1.5
 
 * Changed multipart `fields` encoding for `List` and `Map` values to Laravel/PHP-style bracketed keys (for example: `items[0]`, `meta[name]`) instead of JSON strings.

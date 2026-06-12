@@ -176,8 +176,11 @@ class HttpWrap {
         );
       }
 
-      // Parsing the response body for data
-      final responseBody = await Isolate.run(() => json.decode(response.body));
+      // Parsing the response body in a separate isolate because response might be large
+      final responseBodyString = response.body;
+      final responseBody = await Isolate.run(
+        () => json.decode(responseBodyString),
+      );
 
       // We check if the server sent a success response, if not we check if it sent a message and throw that as an error, otherwise we throw a generic error
       if (streamedResponse.statusCode > 299) {

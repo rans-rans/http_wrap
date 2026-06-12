@@ -23,7 +23,7 @@ Add to your `pubspec.yaml`:
 
 ```
 dependencies:
-	http_wrap: ^1.1.5
+	http_wrap: ^1.1.6
 ```
 
 Then run:
