@@ -1,8 +1,12 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 
 import 'package:http/http.dart' as http;
+import 'package:http_wrap/download_controller.dart';
+import 'package:http_wrap/download_state.dart';
+import 'package:http_wrap/downloader.dart';
 import 'package:http_wrap/request_file_type/request_file.dart';
 
 part 'http_response.dart';
@@ -50,6 +54,30 @@ class HttpWrap {
     _baseUrl = baseUrl ?? _baseUrl;
     _defaultHeaders = defaultHeaders ?? _defaultHeaders;
     _timeout = timeout ?? _timeout;
+  }
+
+  DownloadController download({
+    required String url,
+    required String saveDirectory,
+  }) {
+    final progressController = StreamController<DownloadInfo>();
+    final downloader = Downloader();
+
+    downloader.download(
+      url: url,
+      saveDirectory: saveDirectory,
+      progress: (info) {
+        if (progressController.isClosed) return;
+
+        progressController.add(info);
+
+        if (info.state == .completed || info.state == .failed) {
+          progressController.close();
+        }
+      },
+    );
+
+    return DownloadController(downloader, progressController.stream);
   }
 
   /// Sends an HTTP request and returns a normalized [HttpResponse].

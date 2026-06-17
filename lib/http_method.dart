@@ -15,7 +15,10 @@ enum HttpMethod {
   put,
 
   /// Removes an existing resource.
-  delete;
+  delete,
+
+  /// Retrieves metadata without response body.
+  head;
 
   /// Uppercase HTTP verb used by the underlying `http` client.
   String get value {
@@ -25,6 +28,7 @@ enum HttpMethod {
       .patch => 'PATCH',
       .put => 'PUT',
       .delete => 'DELETE',
+      .head => 'HEAD',
     };
   }
 }

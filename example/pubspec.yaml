@@ -12,8 +12,10 @@ dependencies:
     sdk: flutter
   http_wrap:
     path: ../
-
   cupertino_icons: ^1.0.8
+  path_provider: ^2.1.6
+  permission_handler: ^11.4.0
+
 
 dev_dependencies:
   integration_test:
