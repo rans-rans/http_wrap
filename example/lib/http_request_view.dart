@@ -98,9 +98,9 @@ class _HttpRequestViewState extends State<HttpRequestView> {
                   (e) => Container(
                     alignment: Alignment.topLeft,
                     padding: const .all(12),
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       borderRadius: .all(.circular((16))),
-                      boxShadow: const [
+                      boxShadow: [
                         BoxShadow(
                           blurRadius: 0.7,
                           blurStyle: .outer,

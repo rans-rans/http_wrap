@@ -26,7 +26,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(context) {
     return MaterialApp(
       theme: ThemeData(
-        inputDecorationTheme: InputDecorationThemeData(
+        inputDecorationTheme: const InputDecorationThemeData(
           border: OutlineInputBorder(),
           enabledBorder: OutlineInputBorder(),
           focusedBorder: OutlineInputBorder(),
@@ -41,15 +41,15 @@ class _MyAppState extends State<MyApp> {
                 setState(() => _selectedIndex = value);
               },
               children: {
-                0: Text("Http Request"),
-                1: Text("Download Item"),
+                0: const Text("Http Request"),
+                1: const Text("Download Item"),
               },
             ),
             Expanded(
               child: IndexedStack(
                 index: _selectedIndex,
-                children: [
-                  const HttpRequestView(),
+                children: const [
+                  HttpRequestView(),
                   ItemDownloadView(),
                 ],
               ),

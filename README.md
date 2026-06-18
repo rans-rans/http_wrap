@@ -86,7 +86,7 @@ final res = await api.request(
 ### Multipart/Form-Data Request (File Upload)
 
 ```dart
-import 'package:http_wrap/request_file_type/request_file_from_path.dart';
+import 'package:http_wrap/http_wrap.dart';
 
 final res = await api.request(
 	method: .post,

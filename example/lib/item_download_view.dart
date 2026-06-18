@@ -1,8 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:http_wrap/download_controller.dart';
-import 'package:http_wrap/download_state.dart';
+import 'package:http_wrap/http_wrap.dart';
 import 'package:http_wrap_example/main.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -13,20 +12,15 @@ class ItemDownloadView extends StatefulWidget {
   State<ItemDownloadView> createState() => _ItemDownloadViewState();
 }
 
-const vscode =
-    """https://vscode.download.prss.microsoft.com/"""
-    """dbazure/download/stable/6928394f91b684055b873eecb8bc281365131f1c/"""
-    """VSCodeUserSetup-x64-1.124.2.exe""";
-
-const randomImage =
-    """https://imgs.search.brave.com/EGb6Sk84WbBuotAQg87x_n4_zs"""
-    """0-nWLi_GbmEXygS6c/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9zdGF0/aWMudmVjdGVlenku/Y29t"""
-    """L3N5c3RlbS9y/ZXNvdXJjZXMvdGh1/bWJuYWlscy8wNTMv/MTkzLzU4OS9zbWFs/bC9hLXdvbWFuLX"""
-    """Rh/a2luZy1hLXBpY3R1/cmUtd2l0aC1hLWNh/bWVyYS1mcmVlLXBo/b3RvLmpwZw""";
+const rickRoll =
+    """https://nsf-m4c-one-fr-07.sf-converter.com/prod-new/download/"""
+    """eyJtZWRpYUlkIjoiZFF3NHc5V2dYY1EiLCJ0aXRsZSI6IlJpY2sgQXN0bGV5IC0gTmV2ZXIgR29ubmEg"""
+    """R2l2ZSBZb3UgVXAgKE9mZmljaWFsIFZpZGVvKSAoNEsgUmVtYXN0ZXIpIiwiZm9ybWF0IjoibXA0I"""
+    """iwicXVhbGl0eSI6IjcyMCIsInRpbWVzdGFtcCI6MTc4MTc4OTEzMn0.8d5dcd25257c5f59852cf409a26b21a4""";
 
 class _ItemDownloadViewState extends State<ItemDownloadView> {
   final _urlCtrl = TextEditingController(
-    text: randomImage,
+    text: rickRoll,
   );
 
   DownloadController? _downloadController;
