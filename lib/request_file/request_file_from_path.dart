@@ -1,8 +1,11 @@
 part of './request_file.dart';
 
+/// Multipart file sourced from an existing local file path.
 class RequestFileFromPath extends RequestFile {
+  /// Absolute or relative path to the file on disk.
   final String path;
 
+  /// Creates a file part that reads bytes from [path] at send time.
   RequestFileFromPath({
     required super.itemKey,
     required this.path,

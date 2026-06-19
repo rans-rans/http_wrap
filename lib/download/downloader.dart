@@ -5,21 +5,30 @@ import 'package:http/http.dart' as http;
 import 'package:http_wrap/core/http_wrap.dart';
 import 'package:http_wrap/download/download_state.dart';
 
+/// Low-level download worker used by [DownloadController].
+///
+/// This class handles filename resolution, resumable range requests, file
+/// writes, and progress callbacks.
 class Downloader {
   StreamSubscription<List<int>>? _downloadSubscription;
 
   double _progress = 0.0;
+
+  /// Most recently computed progress percentage.
   double get progress => _progress;
 
+  /// Whether the current transfer stream is paused.
   bool get isPaused {
     return _downloadSubscription?.isPaused == true;
   }
 
+  /// Pauses the current transfer if it is actively streaming.
   void pause() {
     if (_downloadSubscription?.isPaused == true) return;
     _downloadSubscription?.pause();
   }
 
+  /// Resumes the current transfer if it was previously paused.
   void resume() {
     if (_downloadSubscription?.isPaused == true) {
       _downloadSubscription?.resume();
@@ -155,6 +164,10 @@ class Downloader {
     return contentTypeMap[normalized];
   }
 
+  /// Downloads a remote file and reports lifecycle snapshots through [progress].
+  ///
+  /// The callback receives [DownloadInfo] updates for start, incremental
+  /// progress, completion, and error states.
   Future<void> download({
     required String url,
     required String saveDirectory,

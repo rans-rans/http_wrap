@@ -1,3 +1,8 @@
+## 1.2.1
+
+* Added project documentation comments
+
+
 ## 1.2.0
 
 * Added file download support with `Downloader` class for downloading files to local storage.

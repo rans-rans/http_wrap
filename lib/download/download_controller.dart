@@ -24,12 +24,24 @@ import 'package:http_wrap/download/downloader.dart';
 /// downloadController.resume();
 /// ```
 class DownloadController {
+  /// Internal downloader instance that performs stream/file operations.
   final Downloader _downloader;
+
+  /// Emits [DownloadInfo] updates while a file is being downloaded.
+  ///
+  /// Listen to this stream to update progress bars and react to completion or
+  /// failure states.
   final Stream<DownloadInfo> progressStream;
 
+  /// Creates a controller around a [Downloader] and its progress stream.
   DownloadController(this._downloader, this.progressStream);
 
+  /// Temporarily pauses the active transfer when supported by the stream.
   void pause() => _downloader.pause();
+
+  /// Continues a paused transfer.
   void resume() => _downloader.resume();
+
+  /// Returns `true` when the underlying download stream is currently paused.
   bool isPaused() => _downloader.isPaused;
 }

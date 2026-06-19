@@ -9,7 +9,9 @@ part 'request_file_from_string.dart';
 /// - [RequestFileFromPath] for files loaded from a local path.
 /// - [RequestFileFromString] for string content sent as a file part.
 abstract class RequestFile {
+  /// Multipart field name used by the server to read this file part.
   final String itemKey;
 
+  /// Base constructor for all multipart request file wrappers.
   RequestFile({required this.itemKey});
 }
