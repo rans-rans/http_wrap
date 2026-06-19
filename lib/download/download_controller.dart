@@ -31,4 +31,5 @@ class DownloadController {
 
   void pause() => _downloader.pause();
   void resume() => _downloader.resume();
+  bool isPaused() => _downloader.isPaused;
 }

@@ -11,12 +11,19 @@ class Downloader {
   double _progress = 0.0;
   double get progress => _progress;
 
+  bool get isPaused {
+    return _downloadSubscription?.isPaused == true;
+  }
+
   void pause() {
+    if (_downloadSubscription?.isPaused == true) return;
     _downloadSubscription?.pause();
   }
 
   void resume() {
-    _downloadSubscription?.resume();
+    if (_downloadSubscription?.isPaused == true) {
+      _downloadSubscription?.resume();
+    }
   }
 
   String _resolveFileName({
@@ -28,17 +35,42 @@ class Downloader {
       orElse: () => '',
     );
 
-    if (urlName.contains('.')) {
-      return urlName;
+    // Try to get content-disposition header (case-insensitive)
+    String? contentDisposition = headers['content-disposition'];
+    if (contentDisposition == null) {
+      // Fallback: search for the header case-insensitively
+      final dispositionKey = headers.keys.firstWhere(
+        (key) => key.toLowerCase() == 'content-disposition',
+        orElse: () => '',
+      );
+      if (dispositionKey.isNotEmpty) {
+        contentDisposition = headers[dispositionKey];
+      }
     }
 
-    final contentDisposition = headers['content-disposition'];
     final fromDisposition = _fileNameFromContentDisposition(contentDisposition);
     if (fromDisposition != null && fromDisposition.isNotEmpty) {
       return fromDisposition;
     }
 
-    final contentType = headers['content-type'];
+    // Only trust URL path filename when it looks like a real extension, not
+    // tokenized segments that merely contain dots.
+    if (_hasLikelyFileExtension(urlName)) {
+      return urlName;
+    }
+
+    String? contentType = headers['content-type'];
+    if (contentType == null) {
+      // Fallback: search for the header case-insensitively
+      final typeKey = headers.keys.firstWhere(
+        (key) => key.toLowerCase() == 'content-type',
+        orElse: () => '',
+      );
+      if (typeKey.isNotEmpty) {
+        contentType = headers[typeKey];
+      }
+    }
+
     final extension = _extensionFromContentType(contentType);
     if (extension != null) {
       if (urlName.isNotEmpty) {
@@ -52,11 +84,26 @@ class Downloader {
     return 'download.bin';
   }
 
+  bool _hasLikelyFileExtension(String fileName) {
+    if (fileName.isEmpty || !fileName.contains('.')) {
+      return false;
+    }
+
+    final lastDot = fileName.lastIndexOf('.');
+    if (lastDot <= 0 || lastDot == fileName.length - 1) {
+      return false;
+    }
+
+    final extension = fileName.substring(lastDot + 1);
+    return RegExp(r'^[a-zA-Z0-9]{1,5}$').hasMatch(extension);
+  }
+
   String? _fileNameFromContentDisposition(String? header) {
     if (header == null || header.isEmpty) {
       return null;
     }
 
+    // Try filename*=UTF-8''encoded format first
     final filenameStar = RegExp(
       r"filename\*=UTF-8''([^;]+)",
       caseSensitive: false,
@@ -65,12 +112,22 @@ class Downloader {
       return Uri.decodeFull(filenameStar).replaceAll('"', '');
     }
 
-    final filename = RegExp(
-      r'filename="?([^";]+)"?',
+    // Try filename="quoted" format
+    final filenameQuoted = RegExp(
+      r'filename="([^"]+)"',
       caseSensitive: false,
     ).firstMatch(header)?.group(1);
-    if (filename != null && filename.isNotEmpty) {
-      return filename;
+    if (filenameQuoted != null && filenameQuoted.isNotEmpty) {
+      return filenameQuoted;
+    }
+
+    // Try filename=unquoted format (no spaces)
+    final filenameUnquoted = RegExp(
+      r'filename=([^;\s]+)',
+      caseSensitive: false,
+    ).firstMatch(header)?.group(1);
+    if (filenameUnquoted != null && filenameUnquoted.isNotEmpty) {
+      return filenameUnquoted;
     }
 
     return null;
@@ -195,6 +252,7 @@ class Downloader {
                   .new(
                     state: .failed,
                     progress: getProgress(),
+                    exception: (error, stackTrace),
                     canResume: canResume,
                   ),
                 );
@@ -207,6 +265,14 @@ class Downloader {
             )..onError((e, st) {
               if (!downloadCompleter.isCompleted) {
                 downloadCompleter.completeError(e, st ?? .current);
+                progress(
+                  .new(
+                    state: .failed,
+                    progress: getProgress(),
+                    exception: (e, st),
+                    canResume: canResume,
+                  ),
+                );
               }
             });
         await downloadCompleter.future;
@@ -217,6 +283,7 @@ class Downloader {
             state: .failed,
             progress: this.progress,
             canResume: canResume,
+            exception: e,
           ),
         );
       }

@@ -28,9 +28,12 @@ class DownloadInfo {
   /// This shows if the server supports resumable downloads.
   final bool? canResume;
 
+  final Object? exception;
+
   const DownloadInfo({
     this.state = .notStarted,
     this.progress,
     this.canResume,
+    this.exception,
   });
 }

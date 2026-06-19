@@ -1,3 +1,12 @@
+## 1.2.0
+
+* Added file download support with `Downloader` class for downloading files to local storage.
+* Downloads support pause and resume functionality for better user control.
+* Added real-time download progress tracking.
+* Implemented `DownloadController` for managing concurrent downloads with automatic cleanup.
+* Added `DownloadState` enum to track download progress, completion, and error states.
+* Includes download examples in the example app.
+
 ## 1.1.6
 
 * Fixed isolate crash when decoding the response body of a multipart request.

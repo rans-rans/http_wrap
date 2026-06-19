@@ -12,15 +12,12 @@ class ItemDownloadView extends StatefulWidget {
   State<ItemDownloadView> createState() => _ItemDownloadViewState();
 }
 
-const rickRoll =
-    """https://nsf-m4c-one-fr-07.sf-converter.com/prod-new/download/"""
-    """eyJtZWRpYUlkIjoiZFF3NHc5V2dYY1EiLCJ0aXRsZSI6IlJpY2sgQXN0bGV5IC0gTmV2ZXIgR29ubmEg"""
-    """R2l2ZSBZb3UgVXAgKE9mZmljaWFsIFZpZGVvKSAoNEsgUmVtYXN0ZXIpIiwiZm9ybWF0IjoibXA0I"""
-    """iwicXVhbGl0eSI6IjcyMCIsInRpbWVzdGFtcCI6MTc4MTc4OTEzMn0.8d5dcd25257c5f59852cf409a26b21a4""";
+const dummyVideo =
+    """https://static.videezy.com/system/resources/previews/000/004/690/original/Squared_-_Slideshow.mp4""";
 
 class _ItemDownloadViewState extends State<ItemDownloadView> {
   final _urlCtrl = TextEditingController(
-    text: rickRoll,
+    text: dummyVideo,
   );
 
   DownloadController? _downloadController;
@@ -48,13 +45,11 @@ class _ItemDownloadViewState extends State<ItemDownloadView> {
     }
 
     final saveDirectory = "/storage/emulated/0/Download/";
-    // if (saveDirectory == null) return;
 
     _downloadSubscription?.cancel();
 
     final controller = httpWrapPlugin.download(
       url: url,
-      // saveDirectory: saveDirectory..path,
       saveDirectory: saveDirectory,
     );
 

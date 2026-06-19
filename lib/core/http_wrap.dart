@@ -62,11 +62,6 @@ class HttpWrap {
   /// Using the download controller, you can listen to download progress, pause and resume downloads.
   /// The [DownloadController] contains [DownloadInfo] which provides the current state of the download, the progress percentage, and whether the server supports resumable downloads.
   ///
-  ///
-  /// NOTE: This function doesn't check the validity of the URL or the save directory.
-  /// Make sure to handle any necessary permissions and validations before calling this function.
-  ///
-  ///
   /// Example usage:
   /// ```dart
   /// final downloadController = httpWrap.download(

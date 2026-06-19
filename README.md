@@ -3,8 +3,8 @@
 A lightweight Dart/Flutter wrapper around the `http` package to make API calls
 simpler.
 
-Set your request values (`fields`, `headers`, `queryParams`, `requestFiles`, etc.) and
-call one method.
+Set your request values (`fields`, `headers`, `queryParams`, `requestFiles`,
+etc.) and call one method.
 
 ## Features
 
@@ -13,6 +13,7 @@ call one method.
 - Query params support
 - JSON request body support
 - Multipart/form-data support for file uploads
+- File download support(pause, resume, download progress)
 - Unified response object (`HttpResponse`)
 - Structured error metadata (`errorCode`, `errorData`) for failed requests
 - Basic timeout and network error handling
@@ -21,9 +22,9 @@ call one method.
 
 Add to your `pubspec.yaml`:
 
-```
+```yaml
 dependencies:
-	http_wrap: ^1.1.6
+    http_wrap: ^1.2.0
 ```
 
 Then run:
@@ -40,11 +41,11 @@ import 'package:http_wrap/http_wrap.dart';
 final api = HttpWrap()
 	..config(
 		baseUrl: 'https://fakerapi.it',
+		timeout: 30,
 		defaultHeaders: {
 			'Content-Type': 'application/json',
 			'Accept': 'application/json',
 		},
-		timeout: 30,
 	);
 ```
 
@@ -99,6 +100,40 @@ final res = await api.request(
 		RequestFileFromPath(itemKey: 'file', path: '/absolute/path/to/image.jpg'),
 	],
 );
+```
+
+### File Download
+
+NOTE: This download function doesn't check the validity of the URL or the save
+directory. Make sure to handle any necessary permissions and validations before
+calling this function.
+
+The GOOD news is when you start a download, you can close/stop the app entirely,
+come back to the app and if the download url is the same, the package will
+automatically resume from the exact point where it was interupted. The only
+thing to keep safe is the download url.
+
+```dart
+final downloadController = api.download(
+	url: 'https://example.com/files/report.pdf',
+	saveDirectory: '/absolute/path/to/save/directory',
+);
+
+// Use the controller to get the progress stream
+downloadController.progressStream.listen((info) {
+	print('State: ${info.state}');
+	print('Progress: ${info.progress?.toStringAsFixed(2)}%');
+	print('Can resume: ${info.canResume}');
+});
+
+// Use the controller to PAUSE the current download stream.
+downloadController.pause();
+
+// Use the controller to RESUME the paused download stream.
+downloadController.resume();
+
+// Use the controller to see whether the progress is paused.
+downloadController.isPaused();
 ```
 
 ## API Reference
@@ -174,10 +209,10 @@ if (response.success) {
 
 - `null` values in `fields` are automatically removed before sending.
 - In multipart requests, `List` and `Map` values are encoded using bracketed
-	form keys (for example: `items[0]`, `items[1]`, `meta[name]`) so backends
-	like Laravel/PHP can parse them as arrays/objects.
+  form keys (for example: `items[0]`, `items[1]`, `meta[name]`) so backends like
+  Laravel/PHP can parse them as arrays/objects.
 - Explicit empty lists cannot be represented directly in multipart form fields.
-	Empty lists are omitted; normalize them to `[]` on the server if needed.
+  Empty lists are omitted; normalize them to `[]` on the server if needed.
 - For multipart requests, avoid manually setting `content-type`; it is handled
   internally.
 - Network and timeout errors are converted to readable `message` values.
