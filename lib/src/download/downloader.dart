@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
-import 'package:http_wrap/core/http_wrap.dart';
-import 'package:http_wrap/download/download_state.dart';
+import '../core/http_wrap.dart';
+import 'download_state.dart';
 
 /// Low-level download worker used by [DownloadController].
 ///

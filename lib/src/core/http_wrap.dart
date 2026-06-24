@@ -4,15 +4,16 @@ import 'dart:io';
 import 'dart:isolate';
 
 import 'package:http/http.dart' as http;
-import 'package:http_wrap/download/download_controller.dart';
-import 'package:http_wrap/download/download_state.dart';
-import 'package:http_wrap/download/downloader.dart';
-import 'package:http_wrap/request_file/request_file.dart';
+import '../download/download_controller.dart';
+import '../download/download_state.dart';
+import '../download/downloader.dart';
+import '../request_file/request_file.dart';
 
 part 'http_response.dart';
 part 'http_method.dart';
 part 'http_wrap_multipart_fields.dart';
 
+/// Custom Exception to handle internal errors
 class _HttpException implements Exception {
   final String message;
   final int? code;

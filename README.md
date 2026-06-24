@@ -24,7 +24,7 @@ Add to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-    http_wrap: ^1.2.1
+    http_wrap: ^1.3.0
 ```
 
 Then run:

@@ -1,3 +1,12 @@
+## 1.3.0
+
+* **BREAKING**: Reorganized package structure for cleaner public API surface and to fix pub.dev documentation generation conflicts.
+* All implementation files now reside under `lib/src/` (internal) instead of polluting the public import surface.
+* Only `package:http_wrap/http_wrap.dart` is now exposed as the public entry point.
+* Removed duplicate re-export paths and compatibility shims to eliminate IDE autocomplete clutter and dartdoc conflicts.
+* Import recommendations in IDEs now show only the single recommended path: `import 'package:http_wrap/http_wrap.dart';`
+* Project structure now follows Dart conventions: public libraries at `lib/`, internal code under `lib/src/`.
+
 ## 1.2.1
 
 * Added project documentation comments

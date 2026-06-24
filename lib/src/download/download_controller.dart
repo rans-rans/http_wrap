@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:http_wrap/download/download_state.dart';
-import 'package:http_wrap/download/downloader.dart';
+import 'download_state.dart';
+import 'downloader.dart';
 
 /// Controller for managing file downloads, providing methods to pause and resume downloads,
 /// as well as a stream to track download progress and state.
