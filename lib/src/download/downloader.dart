@@ -177,7 +177,13 @@ class Downloader {
     try {
       final urlPath = Uri.parse(url);
 
-      final canResumeRequest = await http.head(urlPath);
+      final canResumeRequest = await http.head(
+        urlPath,
+        headers: {
+          // ignore: use_null_aware_elements
+          if (headers != null) ...headers,
+        },
+      );
       final canResume = canResumeRequest.headers['accept-ranges'] == 'bytes';
 
       final fileName = _resolveFileName(

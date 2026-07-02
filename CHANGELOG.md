@@ -1,3 +1,7 @@
+## 1.3.2
+
+* Added `headers` support to the head request used by download validation.
+
 ## 1.3.1
 
 * Added `headers` parameter to the download function for custom HTTP request headers.
