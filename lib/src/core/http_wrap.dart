@@ -80,12 +80,14 @@ class HttpWrap {
   DownloadController download({
     required String url,
     required String saveDirectory,
+    Map<String, String>? headers,
   }) {
     final progressController = StreamController<DownloadInfo>();
     final downloader = Downloader();
 
     downloader.download(
       url: url,
+      headers: headers,
       saveDirectory: saveDirectory,
       progress: (info) {
         if (progressController.isClosed) return;
@@ -165,7 +167,7 @@ class HttpWrap {
               (fields ?? {})..removeWhere((k, v) => v == null),
             );
         } else {
-          final requestHeaders = Map<String, String>.from(resolvedHeaders)
+          final requestHeaders = resolvedHeaders
             ..removeWhere(
               (key, value) => key.toLowerCase() == 'content-type',
             );

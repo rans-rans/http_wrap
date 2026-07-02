@@ -171,6 +171,7 @@ class Downloader {
   Future<void> download({
     required String url,
     required String saveDirectory,
+    Map<String, String>? headers,
     required Function(DownloadInfo) progress,
   }) async {
     try {
@@ -215,6 +216,8 @@ class Downloader {
         request.headers.addAll(
           {
             if (downloadedBytes > 0) "Range": "bytes=$downloadedBytes-",
+            // ignore: use_null_aware_elements
+            if (headers != null) ...headers,
           },
         );
 

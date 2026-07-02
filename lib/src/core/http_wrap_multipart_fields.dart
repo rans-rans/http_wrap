@@ -48,10 +48,8 @@ Map<String, String> _buildMultipartFields(Map<String, dynamic>? fields) {
 
     // Expand list elements as `key[index]` entries.
     if (value is List) {
-      if (value.isEmpty) {
-        // Multipart cannot represent an explicit empty array value.
-        continue;
-      }
+      // Multipart cannot represent an explicit empty array value.
+      if (value.isEmpty) continue;
 
       for (var i = value.length - 1; i >= 0; i--) {
         pending.add((key: '$key[$i]', value: value[i]));
