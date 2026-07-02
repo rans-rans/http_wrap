@@ -1,3 +1,7 @@
+## 1.3.1
+
+* Added `headers` parameter to the download function for custom HTTP request headers.
+
 ## 1.3.0
 
 * **BREAKING**: Reorganized package structure for cleaner public API surface and to fix pub.dev documentation generation conflicts.
