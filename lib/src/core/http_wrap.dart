@@ -60,7 +60,7 @@ class HttpWrap {
   /// Initiates a file download and returns a [DownloadController] to track its progress.
   /// DownloadeController is returned from this function.
   ///
-  /// Using the download controller, you can listen to download progress, pause and resume downloads.
+  /// Using the download controller, you can listen to download progress, pause, resume, and cancel downloads.
   /// The [DownloadController] contains [DownloadInfo] which provides the current state of the download, the progress percentage, and whether the server supports resumable downloads.
   ///
   /// Example usage:
@@ -76,6 +76,9 @@ class HttpWrap {
   /// downloadController.pause();
   /// // To resume the download
   /// downloadController.resume();
+  ///
+  /// // To cancel and delete partial file
+  /// await downloadController.cancel();
   /// ```
   DownloadController download({
     required String url,
@@ -94,7 +97,9 @@ class HttpWrap {
 
         progressController.add(info);
 
-        if (info.state == .completed || info.state == .failed) {
+        if (info.state == .completed ||
+            info.state == .failed ||
+            info.state == .canceled) {
           progressController.close();
         }
       },

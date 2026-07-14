@@ -3,7 +3,8 @@ import 'dart:async';
 import 'download_state.dart';
 import 'downloader.dart';
 
-/// Controller for managing file downloads, providing methods to pause and resume downloads,
+/// Controller for managing file downloads, providing methods to pause, resume,
+/// and cancel downloads,
 /// as well as a stream to track download progress and state.
 /// The [DownloadController] allows you to control the download process and receive updates on the download status through the [progressStream].
 /// The [progressStream] emits [DownloadInfo] objects that contain the current state of the download, the progress percentage, and whether the server supports resumable downloads.
@@ -22,6 +23,9 @@ import 'downloader.dart';
 ///
 /// // To resume the download
 /// downloadController.resume();
+///
+/// // To cancel and cleanup partial file
+/// await downloadController.cancel();
 /// ```
 class DownloadController {
   /// Internal downloader instance that performs stream/file operations.
@@ -41,6 +45,11 @@ class DownloadController {
 
   /// Continues a paused transfer.
   void resume() => _downloader.resume();
+
+  /// Cancels the active transfer.
+  Future<void> cancel() {
+    return _downloader.cancel();
+  }
 
   /// Returns `true` when the underlying download stream is currently paused.
   bool isPaused() => _downloader.isPaused;

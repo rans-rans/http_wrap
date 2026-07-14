@@ -5,6 +5,9 @@ enum DownloadState {
   /// The download is in progress.
   downloading,
 
+  /// The download was canceled by the caller.
+  canceled,
+
   /// The download has completed successfully.
   completed,
 
@@ -20,6 +23,7 @@ class DownloadInfo {
   /// Possible values are:
   /// - [DownloadState.notStarted] before bytes are received.
   /// - [DownloadState.downloading] while bytes are actively streaming.
+  /// - [DownloadState.canceled] when the transfer is stopped manually.
   /// - [DownloadState.completed] once the file is fully written.
   /// - [DownloadState.failed] if an error interrupts the transfer.
   final DownloadState state;

@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:http_wrap/http_wrap.dart';
 import 'package:http_wrap_example/main.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class ItemDownloadView extends StatefulWidget {
   const ItemDownloadView({super.key});
@@ -36,6 +35,14 @@ class _ItemDownloadViewState extends State<ItemDownloadView> {
     setState(() => _statusMessage = 'Download resumed');
   }
 
+  Future<void> _cancelDownload() async {
+    await _downloadController?.cancel();
+    if (!mounted) return;
+    setState(() {
+      _statusMessage = 'Download canceled and cleaned up';
+    });
+  }
+
   Future<void> _startDownload() async {
     final url = _urlCtrl.text.trim();
 
@@ -66,6 +73,8 @@ class _ItemDownloadViewState extends State<ItemDownloadView> {
 
         if (info.state == .downloading) {
           _statusMessage = 'Downloading...';
+        } else if (info.state == .canceled) {
+          _statusMessage = 'Download canceled';
         } else if (info.state == .completed) {
           _statusMessage = 'Download completed';
         } else if (info.state == .failed) {
@@ -75,12 +84,6 @@ class _ItemDownloadViewState extends State<ItemDownloadView> {
     });
 
     setState(() {});
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    Permission.manageExternalStorage.request();
   }
 
   @override
@@ -120,6 +123,10 @@ class _ItemDownloadViewState extends State<ItemDownloadView> {
                 ElevatedButton(
                   onPressed: _resumeDownload,
                   child: const Text('Resume'),
+                ),
+                ElevatedButton(
+                  onPressed: _cancelDownload,
+                  child: const Text('Cancel'),
                 ),
               ],
             ),

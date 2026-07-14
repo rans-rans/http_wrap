@@ -11,7 +11,15 @@ import 'download_state.dart';
 /// writes, and progress callbacks.
 class Downloader {
   StreamSubscription<List<int>>? _downloadSubscription;
+  Completer<void>? _downloadCompleter;
+  RandomAccessFile? _activeFileSink;
+  File? _activeFile;
+  http.Client? _activeClient;
+  Function(DownloadInfo)? _progressCallback;
+  bool? _activeCanResume;
+  bool _isCanceled = false;
 
+  /// This stores the progress of the download and it is initialized to zero
   double _progress = 0.0;
 
   /// Most recently computed progress percentage.
@@ -33,6 +41,85 @@ class Downloader {
     if (_downloadSubscription?.isPaused == true) {
       _downloadSubscription?.resume();
     }
+  }
+
+  /// Cancels the active transfer and optionally deletes partial file output.
+  Future<void> cancel() async {
+    final hasActiveDownload =
+        _downloadCompleter != null && _downloadCompleter!.isCompleted == false;
+
+    _isCanceled = true;
+
+    await _downloadSubscription?.cancel();
+    _downloadSubscription = null;
+
+    _closeActiveFileSink();
+    _closeActiveClient();
+
+    await _deleteActivePartialFile();
+
+    if (hasActiveDownload) {
+      _emitProgress(
+        state: .canceled,
+        progress: _progress,
+      );
+
+      if (_downloadCompleter?.isCompleted == false) {
+        _downloadCompleter?.complete();
+      }
+    }
+  }
+
+  void _emitProgress({
+    required DownloadState state,
+    double? progress,
+    Object? exception,
+  }) {
+    _progressCallback?.call(
+      .new(
+        state: state,
+        canResume: _activeCanResume,
+        progress: progress,
+        exception: exception,
+      ),
+    );
+  }
+
+  void _closeActiveFileSink() {
+    final fileSink = _activeFileSink;
+    _activeFileSink = null;
+
+    if (fileSink == null) return;
+
+    try {
+      fileSink.closeSync();
+    } catch (_) {}
+  }
+
+  void _closeActiveClient() {
+    _activeClient?.close();
+    _activeClient = null;
+  }
+
+  Future<void> _deleteActivePartialFile() async {
+    final file = _activeFile;
+    if (file == null) return;
+
+    try {
+      if (await file.exists()) {
+        await file.delete();
+      }
+    } catch (_) {}
+  }
+
+  void _resetActiveTransferReferences() {
+    _downloadSubscription = null;
+    _downloadCompleter = null;
+    _activeFileSink = null;
+    _activeFile = null;
+    _activeClient = null;
+    _progressCallback = null;
+    _activeCanResume = null;
   }
 
   String _resolveFileName({
@@ -175,6 +262,16 @@ class Downloader {
     required Function(DownloadInfo) progress,
   }) async {
     try {
+      if (_downloadCompleter != null &&
+          _downloadCompleter?.isCompleted == false) {
+        throw StateError(
+          'A download is already running. Cancel it before starting another.',
+        );
+      }
+
+      _isCanceled = false;
+      _progressCallback = progress;
+
       final urlPath = Uri.parse(url);
 
       final canResumeRequest = await http.head(
@@ -196,14 +293,17 @@ class Downloader {
       await file.parent.create(recursive: true).onError((e, s) {
         throw s;
       });
+      _activeFile = file;
       final fileExists = await file.exists();
 
       int downloadedBytes = fileExists ? file.lengthSync() : 0;
       final fileSink = file.openSync(
         mode: fileExists ? .append : .write,
       );
+      _activeFileSink = fileSink;
 
       int totalBytes = 0;
+      _activeCanResume = canResume;
 
       double getProgress() {
         final progress = downloadedBytes != 0 && totalBytes != 0
@@ -227,17 +327,17 @@ class Downloader {
           },
         );
 
-        final streamResponse = await http.Client().send(request);
+        final activeClient = http.Client();
+        _activeClient = activeClient;
+        final streamResponse = await activeClient.send(request);
         totalBytes = streamResponse.contentLength ?? 0;
 
-        progress(
-          .new(
-            state: .notStarted,
-            canResume: canResume,
-            progress: getProgress(),
-          ),
+        _emitProgress(
+          state: .notStarted,
+          progress: getProgress(),
         );
         final downloadCompleter = Completer<void>();
+        _downloadCompleter = downloadCompleter;
         _downloadSubscription =
             streamResponse.stream.listen(
               (data) {
@@ -245,69 +345,76 @@ class Downloader {
                 try {
                   fileSink.writeFromSync(data);
                   downloadedBytes = downloadedBytes + data.length;
-                  progress(
-                    .new(
-                      state: .downloading,
-                      canResume: canResume,
-                      progress: getProgress(),
-                    ),
+                  _emitProgress(
+                    state: .downloading,
+                    progress: getProgress(),
                   );
                 } finally {
                   _downloadSubscription?.resume();
                 }
               },
               onDone: () {
-                fileSink.closeSync();
-                progress(
-                  .new(
+                _closeActiveFileSink();
+
+                if (_isCanceled == false) {
+                  _emitProgress(
                     state: .completed,
-                    canResume: canResume,
                     progress: getProgress(),
-                  ),
-                );
+                  );
+                }
+
                 if (!downloadCompleter.isCompleted) {
                   downloadCompleter.complete();
                 }
               },
               onError: (Object error, StackTrace stackTrace) {
-                progress(
-                  .new(
+                _closeActiveFileSink();
+
+                if (_isCanceled == false) {
+                  _emitProgress(
                     state: .failed,
                     progress: getProgress(),
                     exception: (error, stackTrace),
-                    canResume: canResume,
-                  ),
-                );
-                fileSink.closeSync();
+                  );
+                }
+
                 if (!downloadCompleter.isCompleted) {
-                  downloadCompleter.completeError(error, stackTrace);
+                  if (_isCanceled) {
+                    downloadCompleter.complete();
+                  } else {
+                    downloadCompleter.completeError(error, stackTrace);
+                  }
                 }
               },
               cancelOnError: true,
             )..onError((e, st) {
               if (!downloadCompleter.isCompleted) {
-                downloadCompleter.completeError(e, st ?? .current);
-                progress(
-                  .new(
+                if (_isCanceled) {
+                  downloadCompleter.complete();
+                } else {
+                  downloadCompleter.completeError(e, st ?? .current);
+                  _emitProgress(
                     state: .failed,
                     progress: getProgress(),
                     exception: (e, st),
-                    canResume: canResume,
-                  ),
-                );
+                  );
+                }
               }
             });
         await downloadCompleter.future;
       } catch (e) {
-        fileSink.closeSync();
-        progress(
-          .new(
+        _closeActiveFileSink();
+
+        if (_isCanceled == false) {
+          _emitProgress(
             state: .failed,
             progress: this.progress,
-            canResume: canResume,
             exception: e,
-          ),
-        );
+          );
+        }
+      } finally {
+        _closeActiveClient();
+        _resetActiveTransferReferences();
       }
     } catch (e) {
       rethrow;

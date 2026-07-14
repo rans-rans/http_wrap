@@ -1,3 +1,8 @@
+## 1.3.3
+
+* Added cancel support for active downloads via `DownloadController.cancel()`.
+* Removed unnecessary storage permissions (`READ_EXTERNAL_STORAGE`, `WRITE_EXTERNAL_STORAGE`, `MANAGE_EXTERNAL_STORAGE`) from the example app's Android manifest.
+
 ## 1.3.2
 
 * Added `headers` support to the head request used by download validation.

@@ -13,7 +13,7 @@ etc.) and call one method.
 - Query params support
 - JSON request body support
 - Multipart/form-data support for file uploads
-- File download support(pause, resume, download progress)
+- File download support (pause, resume, download progress, cancel)
 - Unified response object (`HttpResponse`)
 - Structured error metadata (`errorCode`, `errorData`) for failed requests
 - Basic timeout and network error handling
@@ -132,7 +132,10 @@ downloadController.pause();
 // Use the controller to RESUME the paused download stream.
 downloadController.resume();
 
-// Use the controller to see whether the progress is paused.
+// Cancel and cleanup any partial file.
+await downloadController.cancel();
+
+// Use the controller to see whether the stream is paused.
 downloadController.isPaused();
 ```
 
