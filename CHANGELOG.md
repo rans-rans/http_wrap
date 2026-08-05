@@ -1,3 +1,8 @@
+## 1.3.4
+
+* Updated Android Gradle configuration to explicitly resolve the `com.android.library` plugin through settings plugin management.
+* Upgraded Android build tooling dependencies for improved compatibility with current Flutter/Gradle environments.
+
 ## 1.3.3
 
 * Added cancel support for active downloads via `DownloadController.cancel()`.
