@@ -1,3 +1,7 @@
+## 1.3.5
+
+* Removed empty data passed to request when request.fields is omitted .
+
 ## 1.3.4
 
 * Updated Android Gradle configuration to explicitly resolve the `com.android.library` plugin through settings plugin management.

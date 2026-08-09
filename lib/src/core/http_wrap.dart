@@ -156,21 +156,28 @@ class HttpWrap {
       };
 
       if (method == .get) {
-        request = http.Request(method.value, uri)
-          ..headers.addAll(resolvedHeaders)
-          ..body = json.encode(
-            (fields ?? {})..removeWhere((k, v) => v == null),
+        final requestItem = http.Request(method.value, uri)
+          ..headers.addAll(resolvedHeaders);
+        if (fields != null && fields.isEmpty == false) {
+          requestItem.body = json.encode(
+            fields..removeWhere((k, v) => v == null),
           );
+        }
+        request = requestItem;
       } else {
         final shouldUseMultipart =
             useFormData || requestFiles.isNotEmpty || files.isNotEmpty;
 
         if (shouldUseMultipart == false) {
-          request = http.Request(method.value, uri)
-            ..headers.addAll(resolvedHeaders)
-            ..body = jsonEncode(
-              (fields ?? {})..removeWhere((k, v) => v == null),
+          final requestItem = http.Request(method.value, uri)
+            ..headers.addAll(resolvedHeaders);
+          if (fields != null && fields.isEmpty == false) {
+            requestItem.body = json.encode(
+              fields..removeWhere((k, v) => v == null),
             );
+          }
+
+          request = requestItem;
         } else {
           final requestHeaders = resolvedHeaders
             ..removeWhere(
