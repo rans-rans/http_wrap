@@ -5,6 +5,9 @@ class HttpResponse {
   /// Human-readable status or error description.
   final String? message;
 
+  /// This indicates which kind of error, if the request fails
+  final ErrorType? errorType;
+
   /// Decoded response payload from the server.
   final dynamic data;
 
@@ -20,7 +23,8 @@ class HttpResponse {
 
   /// Creates a response wrapper for successful and failed requests.
   const HttpResponse({
-    required this.message,
+    this.message,
+    required this.errorType,
     required this.data,
     this.success = false,
     this.errorData,

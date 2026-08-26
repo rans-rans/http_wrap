@@ -12,13 +12,14 @@ import '../request_file/request_file.dart';
 part 'http_response.dart';
 part 'http_method.dart';
 part 'http_wrap_multipart_fields.dart';
+part "error_type.dart";
 
 /// Custom Exception to handle internal errors
 class _HttpException implements Exception {
   final String message;
-  final int? code;
+  final ErrorType? errorType;
 
-  _HttpException(this.message, [this.code]);
+  _HttpException(this.message, [this.errorType]);
 
   @override
   String toString() => message;
@@ -128,26 +129,29 @@ class HttpWrap {
   /// diagnostics such as HTTP status code and server error payload.
   Future<HttpResponse> request({
     required HttpMethod method,
-    required String endpoint,
+    String? endpoint,
     String? baseUrl,
     Map<String, dynamic>? fields,
     Map<String, dynamic>? queryParams,
     Map<String, String>? headers,
+    Duration? timeout,
     @Deprecated('Use requestFiles instead.')
     List<({String key, String? path})> files = const [],
     List<RequestFile> requestFiles = const [],
     bool useFormData = false,
   }) async {
     try {
-      final url = (baseUrl ?? _baseUrl)?.replaceAll("https://", '');
+      final url = (baseUrl ?? _baseUrl)
+          ?.replaceAll("https://", '')
+          .replaceAll("http://", "");
       if (url == null) {
         return const .new(
-          message: "Url not configured",
+          errorType: .invalidSetup,
           data: null,
           success: false,
         );
       }
-      final uri = Uri.https(url, endpoint, queryParams);
+      final uri = Uri.https(url, endpoint ?? "", queryParams);
 
       // Creating the request object based on the HTTP method
       late http.BaseRequest request;
@@ -225,17 +229,26 @@ class HttpWrap {
       }
       // We first check if the server even sent a response
       final streamedResponse = await request.send().timeout(
-        Duration(seconds: _timeout),
-        onTimeout: () => throw _HttpException(
-          "Request timed out. Please try again later",
-        ),
+        timeout ?? Duration(seconds: _timeout),
+        onTimeout: () {
+          throw _HttpException(
+            "Request timed out. Please try again later",
+            .requestTimeout,
+          );
+        },
       );
       final response = await http.Response.fromStream(streamedResponse);
 
       if (streamedResponse.statusCode >= 500) {
-        throw _HttpException(
-          'Server error. Please try again later',
-          streamedResponse.statusCode,
+        return .new(
+          errorType: .status500,
+          success: false,
+          data: null,
+          message: streamedResponse.reasonPhrase,
+          errorData: (
+            errorCode: streamedResponse.statusCode,
+            errorData: response.body,
+          ),
         );
       }
 
@@ -250,6 +263,7 @@ class HttpWrap {
         return .new(
           data: responseBody,
           success: false,
+          errorType: .status400,
           message: "Request invalid",
           errorData: (
             errorCode: streamedResponse.statusCode,
@@ -261,27 +275,30 @@ class HttpWrap {
       // We can now return the response body as the request was successful
       return .new(
         message: "Request completed",
+        errorType: null,
         data: responseBody,
         success: true,
       );
     } catch (e) {
       if (e is _HttpException) {
         return .new(
-          message: e.toString(),
           data: null,
+          errorType: e.errorType,
           success: false,
-          errorData: (errorCode: e.code, errorData: null),
+          errorData: (errorCode: null, errorData: null),
         );
       }
       if (e is http.ClientException || e is SocketException) {
-        return const .new(
-          message: "Check your network connection",
+        return .new(
+          errorType: .internetError,
           data: null,
+          message: e.toString(),
           success: false,
           errorData: (errorCode: null, errorData: null),
         );
       }
       return .new(
+        errorType: .unknown,
         message: e.toString(),
         data: null,
         success: false,

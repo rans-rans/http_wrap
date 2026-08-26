@@ -1,6 +1,10 @@
 ## 1.3.5
 
-* Removed empty data passed to request when request.fields is omitted .
+* **BREAKING**: Added `errorType` field to `HttpResponse` as required parameter. This field indicates the type of error when a request fails.
+* **BREAKING**: Changed `message` field in `HttpResponse` from required to optional.
+* Moved `ErrorType` enum into the core package for better organization.
+* Added `timeout` parameter to `HttpWrap.request()` for per-request timeout customization.
+* Improved error handling with structured `ErrorType` classifications (internetError, requestTimeout, status400, status500, unknown).
 
 ## 1.3.4
 

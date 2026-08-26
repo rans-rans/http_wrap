@@ -11,6 +11,7 @@
 /// - [HttpWrap]: Main HTTP client singleton for making requests
 /// - [HttpResponse]: Unified response object for all requests
 /// - [HttpMethod]: Enum for HTTP verbs (GET, POST, PUT, PATCH, DELETE, HEAD)
+/// - [ErrorType]: Enum for error classification (internetError, requestTimeout, status400, status500, unknown)
 /// - [DownloadController]: Controller for managing file downloads
 /// - [DownloadInfo]: Download progress and state tracking
 /// - [RequestFile] and implementations: File attachment types for multipart requests
