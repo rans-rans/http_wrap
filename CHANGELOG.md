@@ -1,3 +1,7 @@
+## 1.3.6
+
+* TBD
+
 ## 1.3.5
 
 * **BREAKING**: Added `errorType` field to `HttpResponse` as required parameter. This field indicates the type of error when a request fails.
