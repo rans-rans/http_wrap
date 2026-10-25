@@ -4,7 +4,8 @@ import 'package:http_wrap/http_wrap.dart';
 import 'package:http_wrap_example/http_request_view.dart';
 import 'package:http_wrap_example/item_download_view.dart';
 
-final httpWrapPlugin = HttpWrap()..config(baseUrl: 'https://fakerapi.it');
+final httpWrapPlugin = HttpWrap()
+  ..config(baseUrl: 'https://jsonplaceholder.typicode.com');
 
 void main() {
   runApp(const MyApp());

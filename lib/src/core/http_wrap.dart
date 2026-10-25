@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:isolate';
 
 import 'package:http/http.dart' as http;
+
 import '../download/download_controller.dart';
 import '../download/download_state.dart';
 import '../download/downloader.dart';
@@ -135,8 +136,6 @@ class HttpWrap {
     Map<String, dynamic>? queryParams,
     Map<String, String>? headers,
     Duration? timeout,
-    @Deprecated('Use requestFiles instead.')
-    List<({String key, String? path})> files = const [],
     List<RequestFile> requestFiles = const [],
     bool useFormData = false,
   }) async {
@@ -172,8 +171,7 @@ class HttpWrap {
         }
         request = requestItem;
       } else {
-        final shouldUseMultipart =
-            useFormData || requestFiles.isNotEmpty || files.isNotEmpty;
+        final shouldUseMultipart = useFormData || requestFiles.isNotEmpty;
 
         if (shouldUseMultipart == false) {
           final requestItem = http.Request(method.value, uri)
@@ -221,12 +219,6 @@ class HttpWrap {
 
               (request as http.MultipartRequest).files.add(multipartPartFile);
             }
-          } else if (files.isNotEmpty) {
-            for (var i = 0; i < files.length; i++) {
-              (request as http.MultipartRequest).files.add(
-                await http.MultipartFile.fromPath(files[i].key, files[i].path!),
-              );
-            }
           }
         }
       }
@@ -245,6 +237,7 @@ class HttpWrap {
       if (streamedResponse.statusCode >= 500) {
         return .new(
           errorType: .status500,
+          statusCode: streamedResponse.statusCode,
           success: false,
           data: null,
           message: streamedResponse.reasonPhrase,

@@ -14,12 +14,15 @@ class HttpResponse {
   /// `true` when request completed successfully, otherwise `false`.
   final bool success;
 
+  /// The status code of the request
+  /// - `errorCode`: HTTP status code(eg. 200, 404, etc) WHEN AVAILABLE.
+  final int? statusCode;
+
   /// Optional error metadata available for failed requests.
   ///
-  /// - `errorCode`: HTTP status code(eg. 200, 404, etc) WHEN AVAILABLE.
   ///  The error code will be null when the request fails due to network issues or other client-side errors.
   /// - `errorData`: Response payload returned by the server on failure.
-  final ({int? errorCode, dynamic errorData})? errorData;
+  final dynamic errorData;
 
   /// Creates a response wrapper for successful and failed requests.
   const HttpResponse({
@@ -28,5 +31,6 @@ class HttpResponse {
     required this.data,
     this.success = false,
     this.errorData,
+    this.statusCode,
   });
 }
