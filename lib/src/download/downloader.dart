@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
+
 import '../core/http_wrap.dart';
 import 'download_state.dart';
 

@@ -1,28 +1,33 @@
-// import 'package:flutter_test/flutter_test.dart';
-// import 'package:http_wrap/http_wrap.dart';
-// import 'package:http_wrap/http_wrap_platform_interface.dart';
-// import 'package:http_wrap/http_wrap_method_channel.dart';
-// import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:http_wrap/http_wrap.dart';
 
-// class MockHttpWrapPlatform
-//     with MockPlatformInterfaceMixin
-//     implements HttpWrapPlatform {
-//   @override
-//   Future<String?> getPlatformVersion() => Future.value('42');
-// }
+void main() {
+  test('HttpWrap returns the shared instance', () {
+    expect(identical(HttpWrap(), HttpWrap()), isTrue);
+  });
 
-// void main() {
-//   final HttpWrapPlatform initialPlatform = HttpWrapPlatform.instance;
+  test(
+    'HttpResponse defaults to an unsuccessful response without metadata',
+    () {
+      const response = HttpResponse(errorType: .invalidSetup, data: null);
 
-//   test('$MethodChannelHttpWrap is the default instance', () {
-//     expect(initialPlatform, isInstanceOf<MethodChannelHttpWrap>());
-//   });
+      expect(response.success, isFalse);
+      expect(response.errorType, ErrorType.invalidSetup);
+      expect(response.message, isNull);
+      expect(response.statusCode, isNull);
+      expect(response.errorData, isNull);
+    },
+  );
 
-//   test('getPlatformVersion', () async {
-//     HttpWrap httpWrapPlugin = HttpWrap();
-//     MockHttpWrapPlatform fakePlatform = MockHttpWrapPlatform();
-//     HttpWrapPlatform.instance = fakePlatform;
+  test('HttpResponse accepts custom error payloads', () {
+    const response = HttpResponse(
+      errorType: .status400,
+      data: null,
+      statusCode: 400,
+      errorData: {'message': 'Custom error'},
+    );
 
-//     expect(await httpWrapPlugin.getPlatformVersion(), '42');
-//   });
-// }
+    expect(response.statusCode, 400);
+    expect(response.errorData, {'message': 'Custom error'});
+  });
+}

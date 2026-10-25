@@ -14,14 +14,18 @@ class HttpResponse {
   /// `true` when request completed successfully, otherwise `false`.
   final bool success;
 
-  /// The status code of the request
-  /// - `errorCode`: HTTP status code(eg. 200, 404, etc) WHEN AVAILABLE.
+  /// HTTP status code for a successfully processed response or handled HTTP error.
+  ///
+  /// May be null for setup, network, timeout, or response-decoding failures.
   final int? statusCode;
 
   /// Optional error metadata available for failed requests.
   ///
-  ///  The error code will be null when the request fails due to network issues or other client-side errors.
-  /// - `errorData`: Response payload returned by the server on failure.
+  /// For handled HTTP errors, [HttpWrap.request] returns a named record with
+  /// `errorCode` and `errorData`. The payload is decoded JSON for handled client
+  /// errors or the raw body for server errors. For network and other client-side
+  /// failures, this is the caught exception instead.
+  /// Callers constructing their own responses may supply other payload types.
   final dynamic errorData;
 
   /// Creates a response wrapper for successful and failed requests.

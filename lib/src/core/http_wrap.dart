@@ -46,8 +46,8 @@ class HttpWrap {
 
   /// Sets global defaults used by every request unless overridden.
   ///
-  /// - [baseUrl]: Host used to build request URLs.
-  /// - [defaultHeaders]: Headers merged into each request by default.
+  /// - [baseUrl]: Base URL including its `http://` or `https://` scheme.
+  /// - [defaultHeaders]: Headers used when a request does not supply its own.
   /// - [timeout]: Request timeout in seconds.
   void config({
     String? baseUrl,
@@ -112,22 +112,28 @@ class HttpWrap {
 
   /// Sends an HTTP request and returns a normalized [HttpResponse].
   ///
-  /// [method] and [endpoint] are required for every request.
+  /// [method] is required. [endpoint] is optional and is appended directly to
+  /// the base URL. For example, use `https://example.com` with `/comments`.
   ///
-  /// - [baseUrl] overrides the globally configured host for one request.
+  /// - [baseUrl] overrides the globally configured base URL for one request.
+  ///   Include the scheme; HTTP is not upgraded to HTTPS.
   /// - [fields] are sent as JSON for normal requests or as form fields for
   ///   multipart requests.
-  /// - [queryParams] are appended to the URL.
-  /// - [headers] override or extend global default headers.
+  /// - [queryParams] are URI-encoded and merged with existing URL parameters.
+  ///   New values override matching keys. Values must be strings, iterables of
+  ///   strings, or null.
+  /// - [headers] replace global default headers for this request when provided.
+  /// - [timeout] overrides the configured timeout for this request.
   /// - [requestFiles] attaches multipart files from path, bytes, or string.
-  /// - [files] is deprecated and kept for backward compatibility.
   /// - [useFormData] forces multipart mode even when no files are provided.
   ///
-  /// Returns `success: false` for network errors, timeout failures, and
-  /// non-2xx HTTP responses.
+  /// Returns `success: false` for network errors and handled non-2xx HTTP
+  /// responses. Timeouts and unsupported request-file types throw exceptions.
   ///
-  /// For failed responses, [HttpResponse.errorData] includes additional
-  /// diagnostics such as HTTP status code and server error payload.
+  /// For handled HTTP responses, [HttpResponse.statusCode] contains the status
+  /// code. For handled HTTP failures, [HttpResponse.errorData] contains a named
+  /// record with `errorCode` and `errorData`. For network and other client-side
+  /// failures, it contains the caught exception.
   Future<HttpResponse> request({
     required HttpMethod method,
     String? endpoint,
@@ -259,6 +265,7 @@ class HttpWrap {
         return .new(
           data: responseBody,
           success: false,
+          statusCode: streamedResponse.statusCode,
           errorType: .status400,
           message: "Request invalid",
           errorData: (
@@ -274,23 +281,17 @@ class HttpWrap {
         errorType: null,
         data: responseBody,
         success: true,
+        statusCode: streamedResponse.statusCode,
       );
     } catch (e) {
-      if (e is _HttpException) {
-        return .new(
-          data: null,
-          errorType: e.errorType,
-          success: false,
-          errorData: (errorCode: null, errorData: null),
-        );
-      }
+      if (e is _HttpException) rethrow;
       if (e is http.ClientException || e is SocketException) {
         return .new(
           errorType: .internetError,
           data: null,
           message: e.toString(),
           success: false,
-          errorData: (errorCode: null, errorData: null),
+          errorData: e,
         );
       }
       return .new(
@@ -298,7 +299,7 @@ class HttpWrap {
         message: e.toString(),
         data: null,
         success: false,
-        errorData: (errorCode: null, errorData: null),
+        errorData: e,
       );
     }
   }
