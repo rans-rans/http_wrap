@@ -141,17 +141,20 @@ class HttpWrap {
     bool useFormData = false,
   }) async {
     try {
-      final url = (baseUrl ?? _baseUrl)
-          ?.replaceAll("https://", '')
-          .replaceAll("http://", "");
+      String? url = baseUrl ?? _baseUrl;
       if (url == null) {
-        return const .new(
-          errorType: .invalidSetup,
-          data: null,
-          success: false,
+        return const .new(errorType: .invalidSetup, data: null, success: false);
+      }
+      var uri = Uri.parse('$url${endpoint ?? ''}');
+
+      if (queryParams != null && queryParams.isNotEmpty) {
+        uri = uri.replace(
+          queryParameters: {
+            ...uri.queryParametersAll,
+            ...queryParams,
+          },
         );
       }
-      final uri = Uri.https(url, endpoint ?? "", queryParams);
 
       // Creating the request object based on the HTTP method
       late http.BaseRequest request;
