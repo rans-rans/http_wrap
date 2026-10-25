@@ -10,7 +10,7 @@ class HttpRequestView extends StatefulWidget {
 }
 
 class _HttpRequestViewState extends State<HttpRequestView> {
-  final _batchIdCtrl = TextEditingController(text: '1');
+  final _postIdCtrl = TextEditingController(text: '1');
 
   late Future<HttpResponse> _getServerData;
 
@@ -22,21 +22,20 @@ class _HttpRequestViewState extends State<HttpRequestView> {
 
   @override
   void dispose() {
-    _batchIdCtrl.dispose();
+    _postIdCtrl.dispose();
     super.dispose();
   }
 
   Future<HttpResponse> _getData() async {
-    if (_batchIdCtrl.text.isEmpty) {
-      _batchIdCtrl.text = '1';
+    if (_postIdCtrl.text.isEmpty) {
+      _postIdCtrl.text = '1';
     }
 
     return httpWrapPlugin.request(
       method: .get,
-      endpoint: '/api/v2/books',
+      endpoint: '/comments',
       queryParams: {
-        '_quantity': _batchIdCtrl.text,
-        '_locale': 'en_US',
+        'postId': _postIdCtrl.text,
       },
     );
   }
@@ -50,12 +49,17 @@ class _HttpRequestViewState extends State<HttpRequestView> {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (snapshot.hasError) {
+        if (snapshot.hasError || snapshot.data?.success != true) {
           return Center(
             child: Column(
               spacing: 4,
               mainAxisSize: .min,
               children: [
+                Text(
+                  snapshot.data?.message ??
+                      snapshot.error?.toString() ??
+                      'Could not load comments.',
+                ),
                 ElevatedButton(
                   child: const Text('Retry'),
                   onPressed: () {
@@ -68,8 +72,7 @@ class _HttpRequestViewState extends State<HttpRequestView> {
           );
         }
 
-        final data = (snapshot.data?.data as Map?) ?? {};
-        final requestData = data['data'] as List? ?? [];
+        final comments = (snapshot.data?.data as List?) ?? [];
 
         return Center(
           child: SingleChildScrollView(
@@ -77,14 +80,17 @@ class _HttpRequestViewState extends State<HttpRequestView> {
             child: Column(
               spacing: 12,
               children: [
-                const Text('Enter a number and press the button'),
+                const Text('Enter a post ID to load its comments'),
                 SizedBox(
-                  width: MediaQuery.sizeOf(context).width * 0.2,
+                  width: 160,
                   child: TextField(
-                    controller: _batchIdCtrl,
+                    controller: _postIdCtrl,
                     textAlign: .center,
                     keyboardType: TextInputType.number,
-                    decoration: const .new(hintText: 'Eg; 1'),
+                    decoration: const .new(
+                      labelText: 'Post ID',
+                      hintText: 'e.g. 1',
+                    ),
                   ),
                 ),
                 ElevatedButton(
@@ -92,10 +98,12 @@ class _HttpRequestViewState extends State<HttpRequestView> {
                     _getServerData = _getData();
                     setState(() {});
                   },
-                  child: const Text('Make Request'),
+                  child: const Text('Load Comments'),
                 ),
-                ...requestData.map(
-                  (e) => Container(
+                if (comments.isEmpty)
+                  const Text('No comments found for this post.'),
+                ...comments.map(
+                  (comment) => Container(
                     alignment: Alignment.topLeft,
                     padding: const .all(12),
                     decoration: const BoxDecoration(
@@ -111,17 +119,20 @@ class _HttpRequestViewState extends State<HttpRequestView> {
                       crossAxisAlignment: .start,
                       children: [
                         Text(
-                          e['title'],
+                          'Comment #${comment['id']} · Post #${comment['postId']}',
+                        ),
+                        Text(
+                          comment['name'],
                           style: const .new(
                             fontSize: 16,
                             fontWeight: .bold,
                           ),
                         ),
                         Text(
-                          e['author'],
+                          comment['email'],
                           style: const .new(fontWeight: .bold),
                         ),
-                        Text(e['description']),
+                        Text(comment['body']),
                       ],
                     ),
                   ),
