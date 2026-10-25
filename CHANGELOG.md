@@ -1,6 +1,18 @@
+## 2.0.0
+
+* **BREAKING**: Removed the deprecated `files` parameter from `HttpWrap.request()`. Use `requestFiles` with `RequestFileFromPath`, `RequestFileFromBytes`, or `RequestFileFromString` instead.
+* **BREAKING**: Base URLs must now include their scheme (`http://` or `https://`). Requests preserve the supplied scheme instead of forcing HTTPS.
+* **BREAKING**: Raised the minimum Dart SDK version to 3.13.4.
+* Query parameters are URI-encoded and merged with existing URL parameters. New values override matching keys while preserving other repeated parameters.
+* Added optional `HttpResponse.statusCode` for successful responses and handled HTTP errors.
+* **BREAKING**: Changed `HttpResponse.errorData` to `dynamic`. Handled HTTP errors retain the named record containing `errorCode` and `errorData`; network and other client-side failures now expose the caught exception.
+* **BREAKING**: Request timeouts and unsupported request-file types now throw exceptions instead of returning a failed `HttpResponse`.
+* Updated the example app to fetch JSONPlaceholder comments by post ID and display the top-level JSON array.
+* Updated API documentation and migration examples, added URL-construction regression tests, and excluded generated API documentation from the published package.
+
 ## 1.3.6
 
-* TBD
+* Made `endpoint` optional and added `ErrorType.invalidSetup` for missing base URL configuration.
 
 ## 1.3.5
 

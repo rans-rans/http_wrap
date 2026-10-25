@@ -2,6 +2,10 @@
 build/
 example/build/
 **/build/
+coverage/
+
+# Generated API documentation (pub.dev generates its own)
+**/doc/api/
 
 # Tool and IDE metadata
 .dart_tool/

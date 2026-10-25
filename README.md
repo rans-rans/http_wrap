@@ -15,8 +15,15 @@ etc.) and call one method.
 - Multipart/form-data support for file uploads
 - File download support (pause, resume, download progress, cancel)
 - Unified response object (`HttpResponse`)
+- HTTP status codes and structured error classifications (`ErrorType`)
 - Structured error metadata (`errorCode`, `errorData`) for failed requests
 - Basic timeout and network error handling
+
+## Requirements
+
+- Dart `>=3.13.4 <4.0.0` and a compatible Flutter SDK
+- Android API 24+ or iOS 13.0+ for the bundled native plugin
+- Flutter Web is not supported because the package uses `dart:io`
 
 ## Installation
 
@@ -24,7 +31,7 @@ Add to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-    http_wrap: ^1.3.0
+    http_wrap: ^2.0.0
 ```
 
 Then run:
@@ -40,7 +47,7 @@ import 'package:http_wrap/http_wrap.dart';
 
 final api = HttpWrap()
 	..config(
-		baseUrl: 'https://fakerapi.it',
+		baseUrl: 'https://jsonplaceholder.typicode.com',
 		timeout: 30,
 		defaultHeaders: {
 			'Content-Type': 'application/json',
@@ -54,15 +61,18 @@ final api = HttpWrap()
 ```dart
 final res = await api.request(
 	method: .get,
-	endpoint: '/api/v2/books',
+	endpoint: '/comments',
 	queryParams: {
-		'_quantity': '5',
-		'_locale': 'en_US',
+		'postId': '1',
 	},
 );
 
 if (res.success) {
-	print(res.data);
+	// /comments returns a top-level JSON array, not an object with a data key.
+	final comments = res.data as List;
+	for (final comment in comments) {
+		print('${comment['name']} (${comment['email']})');
+	}
 } else {
 	print(res.message);
 }
@@ -73,12 +83,14 @@ if (res.success) {
 ```dart
 final res = await api.request(
 	method: .post,
-	endpoint: '/api/v1/users',
+	endpoint: '/posts',
 	fields: {
-		'name': 'John Doe',
-		'email': 'john@acme.com',
+		'title': 'Hello',
+		'body': 'An example post',
+		'userId': 1,
 	},
 	headers: {
+		'Content-Type': 'application/json',
 		'Authorization': 'Bearer your_token_here',
 	},
 );
@@ -86,12 +98,15 @@ final res = await api.request(
 
 ### Multipart/Form-Data Request (File Upload)
 
+Use your own upload API; JSONPlaceholder does not support file uploads.
+
 ```dart
 import 'package:http_wrap/http_wrap.dart';
 
 final res = await api.request(
 	method: .post,
-	endpoint: '/api/v1/upload',
+	baseUrl: 'https://your-api.example',
+	endpoint: '/upload',
 	useFormData: true,
 	fields: {
 		'title': 'Profile photo',
@@ -151,50 +166,71 @@ void config({
 })
 ```
 
-- `baseUrl`: Default host/base URL used when calling `request`
+- `baseUrl`: Full base URL, including `http://` or `https://`; the scheme is preserved
 - `defaultHeaders`: Headers automatically added to every request
 - `timeout`: Timeout in seconds (default: `100`)
+
+The endpoint is appended directly to the base URL. For example, use
+`baseUrl: 'http://localhost:8080'` with `endpoint: '/comments'`. Keep the slash
+between them; it is not inserted or normalized automatically.
+
+HTTP is supported without being upgraded to HTTPS. On mobile platforms, local
+HTTP endpoints may require Android cleartext-traffic or iOS App Transport
+Security configuration. Prefer HTTPS for production traffic.
 
 ### `request`
 
 ```dart
 Future<HttpResponse> request({
 	required HttpMethod method,
-	required String endpoint,
+	String? endpoint,
 	String? baseUrl,
 	Map<String, dynamic>? fields,
 	Map<String, dynamic>? queryParams,
 	Map<String, String>? headers,
-	@Deprecated('Use requestFiles instead.')
-	List<({String key, String? path})> files = const [],
+	Duration? timeout,
 	List<RequestFile> requestFiles = const [],
 	bool useFormData = false,
 })
 ```
 
 - `method`: HTTP method (`.get`, `.post`, `.put`, `.patch`, `.delete`)
-- `endpoint`: API route, example: `/api/v2/books`
-- `baseUrl`: Per-request base URL override
+- `endpoint`: Optional API route, for example `/comments`; omit it to use the base URL as-is
+- `baseUrl`: Per-request full base URL override, including the scheme
 - `fields`: JSON body fields (or multipart form fields)
-- `queryParams`: URL query parameters
-- `headers`: Per-request headers
+- `queryParams`: URI-encoded query parameters merged with existing URL parameters;
+  new values override matching keys. Values must be strings, iterables of
+  strings, or `null` (convert numbers to strings first)
+- `headers`: Per-request headers; when provided, these replace the configured defaults
+- `timeout`: Per-request timeout override as a `Duration`
 - `requestFiles`: Files for multipart requests (`RequestFileFromPath`,
   `RequestFileFromBytes`, `RequestFileFromString`)
-- `files`: Deprecated. Backward-compatible multipart files using `(key, path)`
 - `useFormData`: Force multipart/form-data
 
 ## Response Shape
 
-Every request returns `HttpResponse`:
+Requests return `HttpResponse` unless a timeout or unsupported request-file type
+causes an exception:
 
 ```dart
 class HttpResponse {
 	final String? message;
+	final ErrorType? errorType;
 	final dynamic data;
 	final bool success;
-	final ({int? errorCode, dynamic errorData})? errorData;
+	final int? statusCode;
+	final dynamic errorData;
 }
 ```
+
+`statusCode` is populated for successfully processed responses and handled HTTP
+errors. It may be `null` for setup, network, timeout, or response-decoding failures.
+
+`errorData` is declared `dynamic`. For handled HTTP errors, it is a named record
+with `errorCode` and `errorData` fields. The payload is decoded JSON for handled
+client errors and the raw response body for server errors. For network and other
+client-side failures, it contains the caught exception instead. Responses
+constructed by callers may use other `errorData` types.
 
 Typical checks:
 
@@ -203,10 +239,47 @@ if (response.success) {
 	// handle response.data
 } else {
 	// handle response.message
-	print(response.errorData?.errorCode);
-	print(response.errorData?.errorData);
+	print(response.errorType);
+	print(response.statusCode);
+	print(response.errorData);
 }
 ```
+
+Handle exceptions separately when making a request:
+
+```dart
+try {
+	final response = await api.request(
+		method: .get,
+		endpoint: '/comments',
+		timeout: const Duration(seconds: 10),
+	);
+	print(response.success);
+} catch (error) {
+	// Includes request timeouts and unsupported request-file types.
+	print(error);
+}
+```
+
+## Migrating To 2.0.0
+
+- Include the scheme in every configured or per-request base URL. Bare hosts
+  such as `example.com` must become `https://example.com` (or `http://` when
+  explicitly needed). Existing `http://` URLs are no longer forced to HTTPS.
+- Replace the removed `files` parameter with `requestFiles`:
+
+  ```dart
+  requestFiles: [
+    RequestFileFromPath(itemKey: 'file', path: '/absolute/path/to/file.jpg'),
+  ],
+  ```
+
+- `HttpResponse.errorData` is now `dynamic`. Use `statusCode` for HTTP status
+  checks. HTTP failures return a named record, while network and other client-side
+  failures expose the caught exception; do not assume every error is a record.
+- Handle timeout and unsupported request-file exceptions with `try`/`catch`;
+  these no longer return a failed `HttpResponse`.
+- Upgrade to a Flutter SDK that includes Dart 3.13.4 or later.
 
 ## Notes
 
@@ -218,7 +291,8 @@ if (response.success) {
   Empty lists are omitted; normalize them to `[]` on the server if needed.
 - For multipart requests, avoid manually setting `content-type`; it is handled
   internally.
-- Network and timeout errors are converted to readable `message` values.
+- Network errors return `success: false` with an `ErrorType`; `message` is
+  optional and may be `null`. Request timeouts throw exceptions.
 - For non-2xx responses, `success` is `false` and `errorData` contains server
   error details.
 
