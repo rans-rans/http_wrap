@@ -31,7 +31,7 @@ Add to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-    http_wrap: ^2.0.0
+    http_wrap: ^2.0.1
 ```
 
 Then run:
@@ -199,8 +199,9 @@ Future<HttpResponse> request({
 - `baseUrl`: Per-request full base URL override, including the scheme
 - `fields`: JSON body fields (or multipart form fields)
 - `queryParams`: URI-encoded query parameters merged with existing URL parameters;
-  new values override matching keys. Values must be strings, iterables of
-  strings, or `null` (convert numbers to strings first)
+  new values override matching keys. String, num, bool, DateTime, null, and
+  iterable values are supported; scalars and iterable elements are converted to
+  strings. Unsupported value types throw a clear error.
 - `headers`: Per-request headers; when provided, these replace the configured defaults
 - `timeout`: Per-request timeout override as a `Duration`
 - `requestFiles`: Files for multipart requests (`RequestFileFromPath`,

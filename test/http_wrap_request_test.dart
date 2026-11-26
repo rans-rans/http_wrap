@@ -150,6 +150,50 @@ void main() {
       });
     });
 
+    test('normalizes bool, num, DateTime, and iterable query values', () async {
+      final response = await api.request(
+        method: .get,
+        endpoint: '/comments',
+        queryParams: {
+          'include_balance': true,
+          'include_transactions': false,
+          'staff_id': 42,
+          'ratio': 3.5,
+          'since': DateTime.utc(2026, 11, 26, 10, 30),
+          'ids': [1, true, 'x'],
+        },
+      );
+
+      expect(response.success, isTrue);
+      expect(requestedUri?.queryParametersAll, {
+        'include_balance': ['true'],
+        'include_transactions': ['false'],
+        'staff_id': ['42'],
+        'ratio': ['3.5'],
+        'since': ['2026-11-26T10:30:00.000Z'],
+        'ids': ['1', 'true', 'x'],
+      });
+    });
+
+    test('throws a clear error for unsupported query parameter types', () async {
+      await expectLater(
+        api.request(
+          method: .get,
+          endpoint: '/comments',
+          queryParams: {
+            'filter': {'nested': 'map'},
+          },
+        ),
+        throwsA(
+          isA<Exception>().having(
+            (error) => error.toString(),
+            'message',
+            contains('Unsupported query parameter value type'),
+          ),
+        ),
+      );
+    });
+
     test(
       'returns the status code and error record for client errors',
       () async {

@@ -1,3 +1,7 @@
+## 2.0.1
+
+* Normalized query parameter values before URI construction. `String`, `num`, `bool`, `DateTime`, `null`, and iterable values are supported; scalars and iterable elements are converted to strings. Unsupported value types throw a clear error instead of surfacing as `ErrorType.unknown`.
+
 ## 2.0.0
 
 * **BREAKING**: Removed the deprecated `files` parameter from `HttpWrap.request()`. Use `requestFiles` with `RequestFileFromPath`, `RequestFileFromBytes`, or `RequestFileFromString` instead.

@@ -26,6 +26,37 @@ class _HttpException implements Exception {
   String toString() => message;
 }
 
+Map<String, dynamic> _normalizeQueryParams(Map<String, dynamic> queryParams) {
+  return queryParams.map(
+    (key, value) => MapEntry(key, _normalizeQueryParamValue(value)),
+  );
+}
+
+dynamic _normalizeQueryParamValue(dynamic value) {
+  if (value == null || value is String) return value;
+  if (value is num || value is bool) return value.toString();
+  if (value is DateTime) return value.toIso8601String();
+  if (value is Iterable) {
+    return value.map(_normalizeQueryParamElement).toList(growable: false);
+  }
+
+  throw _HttpException(
+    'Unsupported query parameter value type: ${value.runtimeType}. '
+    'Expected String, num, bool, DateTime, Iterable, or null.',
+  );
+}
+
+String _normalizeQueryParamElement(dynamic value) {
+  if (value is String) return value;
+  if (value is num || value is bool) return value.toString();
+  if (value is DateTime) return value.toIso8601String();
+
+  throw _HttpException(
+    'Unsupported query parameter iterable element type: ${value.runtimeType}. '
+    'Expected String, num, bool, or DateTime.',
+  );
+}
+
 /// Lightweight HTTP wrapper with shared configuration and typed responses.
 ///
 /// [HttpWrap] uses a singleton instance so configuration can be reused across
@@ -156,7 +187,7 @@ class HttpWrap {
         uri = uri.replace(
           queryParameters: {
             ...uri.queryParametersAll,
-            ...queryParams,
+            ..._normalizeQueryParams(queryParams),
           },
         );
       }

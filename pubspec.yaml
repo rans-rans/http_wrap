@@ -1,6 +1,6 @@
 name: http_wrap
 description: "A lightweight Dart and Flutter HTTP wrapper with shared configuration, multipart uploads, and unified responses."
-version: 2.0.0
+version: 2.0.1
 homepage: https://github.com/rans-rans/http_wrap
 repository: https://github.com/rans-rans/http_wrap
 
